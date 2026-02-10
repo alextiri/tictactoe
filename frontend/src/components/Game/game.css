@@ -1,0 +1,72 @@
+.board {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, 110px);
+  grid-template-rows: repeat(3, 110px);
+  gap: 10px;
+}
+
+.cell {
+  background: #ffffff;
+  border: 2px solid #222;
+  font-size: 3rem;
+  font-weight: 600;
+  color: #111;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.2s ease;
+  user-select: none;
+}
+
+.cell:hover {
+  background: #dddddd;
+}
+
+.win-cell {
+  background: #c9f7df;
+  box-shadow: 0 0 15px rgba(0, 180, 120, 0.4);
+}
+
+.win-line {
+  position: absolute;
+  background: #00c27a;
+  z-index: 5;
+  border-radius: 6px;
+  box-shadow: 0 0 15px rgba(0, 200, 130, 0.7);
+}
+
+.pattern-0 { top: 55px; left: 0; right: 0; height: 6px; }
+.pattern-1 { top: 175px; left: 0; right: 0; height: 6px; }
+.pattern-2 { top: 295px; left: 0; right: 0; height: 6px; }
+.pattern-3 { left: 55px; top: 0; bottom: 0; width: 6px; }
+.pattern-4 { left: 175px; top: 0; bottom: 0; width: 6px; }
+.pattern-5 { left: 295px; top: 0; bottom: 0; width: 6px; }
+
+.pattern-6 {
+  width: 6px;
+  height: 100%;
+  top: 0;
+  left: 175px;
+  transform: rotate(45deg);
+  transform-origin: top;
+}
+
+.pattern-7 {
+  width: 6px;
+  height: 100%;
+  top: 0;
+  left: 175px;
+  transform: rotate(-45deg);
+  transform-origin: top;
+}
+
+.game-over .cell {
+  cursor: default;
+  pointer-events: none;
+}
+
+.game-over .cell:hover {
+  background: #ffffff;
+}

@@ -1,0 +1,36 @@
+.r-title {
+    text-align: center;
+}
+
+.register {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.username,
+.email,
+.password {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin: 5px 0;
+}
+
+.username p,
+.email p,
+.password p {
+    width: 120px;
+    text-align: left;
+    margin-right: 10px;
+}
+
+.register-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.error {
+    text-align: center;
+}
