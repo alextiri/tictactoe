@@ -128,6 +128,7 @@ export default function Game() {
                 </div>
             ))}
             </div>
+            <button>Return to Main Page</button>
         </div>
     );
 
