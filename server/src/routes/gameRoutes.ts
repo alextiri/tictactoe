@@ -1,19 +1,21 @@
 import { Router } from 'express';
 import {
   createGame,
-  // getGames,
+  getUserGameHistory,
   getGameById,
-  // updateItem,
+  makeMove,
+  joinGame,
   // deleteItem,
 } from '../controllers/gameController.js';
 import { authMiddleware } from '../middlewares/authMiddleware.js';
 
 const router = Router();
 
-// router.get('/', authMiddleware, getGames);
+router.get('/history', authMiddleware, getUserGameHistory)
 router.get('/:id', authMiddleware, getGameById);
+router.post('/join', authMiddleware, joinGame);
 router.post('/', authMiddleware, createGame);
-// router.put('/:id', authMiddleware, updateItem);
+router.post('/:id/move', authMiddleware, makeMove);
 // router.delete('/:id', authMiddleware, deleteItem);
 
 export default router;

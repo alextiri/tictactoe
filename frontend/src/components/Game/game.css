@@ -45,22 +45,34 @@
 .pattern-5 { left: 295px; top: 0; bottom: 0; width: 6px; }
 
 .pattern-6 {
-  width: 6px;
-  height: 100%;
+  position: absolute;
   top: 0;
-  left: 175px;
+  left: 0;
+  width: 495px; /* 350px */
+  height: 6px; /* line thickness */
+  background: #00c27a;
   transform: rotate(45deg);
-  transform-origin: top;
+  transform-origin: top left;
+  border-radius: 6px;
+  z-index: 5;
+  box-shadow: 0 0 15px rgba(0, 200, 130, 0.7);
 }
 
+/* Top-right → bottom-left */
 .pattern-7 {
-  width: 6px;
-  height: 100%;
+  position: absolute;
   top: 0;
-  left: 175px;
+  right: 0;
+  width: 495px; /* 350px */
+  height: 6px;
+  background: #00c27a;
   transform: rotate(-45deg);
-  transform-origin: top;
+  transform-origin: top right;
+  border-radius: 6px;
+  z-index: 5;
+  box-shadow: 0 0 15px rgba(0, 200, 130, 0.7);
 }
+
 
 .game-over .cell {
   cursor: default;

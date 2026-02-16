@@ -46,7 +46,7 @@ export default function Register() {
     return (
         <div className="register">
             <h1 className="r-title">Register here</h1>
-            <div>
+            <div className="register-card">
                 <div className="username">
                     <p>Username</p>
                     <input

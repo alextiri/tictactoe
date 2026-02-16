@@ -57,7 +57,7 @@ export default function Home() {
         <h1>TicTacToes</h1>
         <h2>(mmm toes...)</h2>
         <p>Login here</p>
-        <div className='login'>
+        <div className='login-card'>
             <div className='login-comp'>
                 <p>E-mail</p>
                 <input

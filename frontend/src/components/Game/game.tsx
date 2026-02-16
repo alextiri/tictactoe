@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import './game.css'
 
 interface Game {
@@ -9,6 +10,9 @@ interface Game {
   game_code: string;
   current_turn: string;
   board: { cells: string[] };
+  status: "ongoing" | "finished";
+  winner: string | null;
+  winningPattern: number[] | null;
 }
 
 export default function Game() {
@@ -17,6 +21,7 @@ export default function Game() {
     const [winner, setWinner] = useState<string | null>(null);
     const [winningPattern, setWinningPattern] = useState<number[] | null>(null);
     const [isDraw, setIsDraw] = useState(false);
+    const navigate = useNavigate();
 
     const WIN_PATTERNS = [
         [0,1,2],
@@ -29,29 +34,40 @@ export default function Game() {
         [2,4,6],
     ];
 
-    const handleCellClick = (index: number) => {
+    const handleCellClick = async (index: number) => {
         if(!game || winner) return;
+        
+        const token = localStorage.getItem("token");
+        if(!token) return;
 
-        const cells = [...game.board.cells];
-        if(cells[index] !== "") return;
+        try {
+            const res = await fetch(`http://localhost:3000/api/games/${game.id}/move`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${token}`,
+                },
+                body: JSON.stringify({ square: index })
+            });
 
-        cells[index] = game.current_turn;
+            if(!res.ok) {
+                const data = await res.json();
+                throw new Error(data.message || "Failed to make a move");
+            }
 
-        const result = checkWinner(cells);
-        if(Array.isArray(result)) {
-            setWinner(game.current_turn);
-            setWinningPattern(result);
-        } else if(result === "DRAW") {
-            setIsDraw(true);
+            const data = await res.json();
+            setGame(data.game);
+            if(data.game.status === "finished") {
+                if (data.game.winner) {
+                    setWinner(data.game.winner);
+                    setWinningPattern(data.game.winningPattern);
+                } else {
+                    setIsDraw(true);
+                }
+            }
+        } catch(err: any) {
+            console.log(err.message);
         }
-
-        const nextTurn = game.current_turn === "X" ? "O" : "X";
-
-        setGame({
-            ...game,
-            board: { cells },
-            current_turn: nextTurn
-        });
     }
 
     useEffect(() => {
@@ -69,6 +85,14 @@ export default function Game() {
 
                 const data = await res.json();
                 setGame(data.game);
+                if (data.game.status === "finished") {
+                    if (data.game.winner) {
+                        setWinner(data.game.winner);
+                        setWinningPattern(data.game.winningPattern);
+                    } else {
+                        setIsDraw(true);
+                    }
+                }
             } catch (err: any) {
                 console.log(err);
             }
@@ -76,25 +100,6 @@ export default function Game() {
 
         fetchGame();
     }, [id])
-
-    const checkWinner = (cells: string[]) => {
-        for(const pattern of WIN_PATTERNS) {
-            const [a, b, c] = pattern;
-            if(
-                cells[a] &&
-                cells[a] === cells[b] &&
-                cells[a] === cells[c]
-            ) {
-                return pattern;
-            }
-        }
-
-        if(cells.every(cell => cell !== "")) {
-            return "DRAW";
-        }
-
-        return null;
-    }
 
     if (!game) return <p>Loading game...</p>;
 
@@ -128,7 +133,7 @@ export default function Game() {
                 </div>
             ))}
             </div>
-            <button>Return to Main Page</button>
+            <button onClick={() => navigate('/profile') }>Return to Main Page</button>
         </div>
     );
 
