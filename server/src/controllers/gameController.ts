@@ -213,19 +213,19 @@ export const makeMove = async (req: Request, res: Response, next: NextFunction) 
       return res.status(400).json({ message: "Game already finished" });
     }
 
-    // const playerSymbol =
-    // userId === game.player_x_id ? 'X' :
-    // userId === game.player_o_id ? 'O' : null;
+    const playerSymbol =
+    userId === game.player_x_id ? 'X' :
+    userId === game.player_o_id ? 'O' : null;
 
-    // if (playerSymbol !== game.current_turn) {
-    //   return res.status(400).json({ message: "Not your turn" });
-    // }
-    let playerSymbol = 'X';
-    if (game.board.cells.filter(cell => cell === 'X').length <= game.board.cells.filter(cell => cell === 'O').length) {
-        playerSymbol = 'X';
-    } else {
-        playerSymbol = 'O';
+    if (playerSymbol !== game.current_turn) {
+      return res.status(400).json({ message: "Not your turn" });
     }
+    // let playerSymbol = 'X';
+    // if (game.board.cells.filter(cell => cell === 'X').length <= game.board.cells.filter(cell => cell === 'O').length) {
+    //     playerSymbol = 'X';
+    // } else {
+    //     playerSymbol = 'O';
+    // }
 
     game.current_turn = playerSymbol;
     const board = game.board.cells;

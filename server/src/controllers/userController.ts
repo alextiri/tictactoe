@@ -6,6 +6,10 @@ import jwt from 'jsonwebtoken';
 export const registerUser = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { username, email, password } = req.body;
+    if(password.length < 8) {
+      res.status(400).json({ message: "Password must be at least 8 characters long" });
+      return;
+    }
 
     const saltRounds = 10;
 

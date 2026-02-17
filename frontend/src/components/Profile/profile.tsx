@@ -26,6 +26,7 @@ export default function Profile() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const [joinCode, setJoinCode] = useState("");
+    const [joinError, setJoinError] = useState<string | null>(null);
 
     const [history, setHistory] = useState<GameHistoryEntry[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
@@ -75,12 +76,25 @@ export default function Profile() {
     }
 
     const handleJoinGame = async () => {
-        if(!joinCode) return;
+        if(!joinCode) {
+            setJoinError("Please enter a game code");
+            setJoinCode("");
+            return;
+        }
+        if(joinCode.length !== 6) {
+            setJoinError("Please enter a valid, 6-digit game code");
+            setJoinCode("");
+            return;
+        }
 
         const token = localStorage.getItem("token");
-        if(!token) return;
+        if(!token) {
+            setJoinError("You must be logged in");
+            return;
+        }
 
         try {
+            setJoinError(null);
             const res = await fetch("http://localhost:3000/api/games/join/", {
                 method: "POST",
                 headers: {
@@ -89,16 +103,16 @@ export default function Profile() {
                 },
                 body: JSON.stringify({ gameCode: joinCode })
             });
-            if(!res.ok) {
-                const data = await res.json();
-                throw new Error(data.message || "Failed to join game");
-            }
 
             const data = await res.json();
+            if(!res.ok) {
+                throw new Error(data.message || "Failed to join game");
+            }
             console.log("Joined game", data.game);
             navigate(`/game/${data.game.id}`)
         } catch(err: any) {
-            console.error(err.message);
+            setJoinError(err.message || "Could not join game");
+            setJoinCode("");
         }
     };
 
@@ -222,6 +236,9 @@ export default function Profile() {
                 />
                 <button onClick={handleJoinGame}>Join Game</button>
             </div>
+            {joinError && (
+                <p className="join-error">{joinError}</p>
+            )}
             <button onClick={handleLogout}>Logout</button>
         </div>
     )

@@ -9,16 +9,23 @@ export default function Home() {
     const location = useLocation();
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
-    const successMessage = location.state?.successMessage;
+    const [flashMessage, setFlashMessage] = useState<string | null>(null);
 
     useEffect(() => {
+        const state = location.state as { successMessage?: string } | null;
+        if (state?.successMessage) {
+            setFlashMessage(state.successMessage);
+        }
         const token = localStorage.getItem('token');
         if (token) {
             navigate('/profile');
         }
     }, []);
 
+    const clearFlash = () => setFlashMessage(null);
+
     const handleLogin = async() => {
+        clearFlash();
         try {
             setLoading(true);
             setErrorMessage(null);
@@ -79,8 +86,8 @@ export default function Home() {
         {errorMessage && (
             <p className="error-message">{errorMessage}</p>
         )}
-        {successMessage && (
-            <p className='success-message'>{successMessage}</p>
+        {flashMessage && (
+            <p className='success-message'>{flashMessage}</p>
         )}
     </div>
     )
