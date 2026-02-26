@@ -1,9 +1,81 @@
+.game-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 25px;
+  animation: gameFadeIn 0.2s ease-out;
+}
+
+.game-container h1 {
+  font-size: 2rem;
+  margin-bottom: 10px;
+  color: #1f7a4f;
+  text-align: center;
+}
+
+.game-container p {
+  font-size: 1rem;
+  margin-bottom: 10px;
+  font-weight: 500;
+  color: #333;
+}
+
+.winner-text {
+  font-size: 1.6rem;
+  color: #1f8f4a;
+  margin: 10px 0;
+  font-weight: 700;
+}
+
+.draw-text {
+  font-size: 1.4rem;
+  color: #666;
+  margin: 10px 0;
+  font-weight: 600;
+}
+
+.error-message {
+  margin-top: 12px;
+  color: #c0392b;
+  font-size: 0.9rem;
+  font-weight: 600;
+  background-color: #fdeaea;
+  border: 1px solid #f5c6c6;
+  padding: 8px 12px;
+  border-radius: 8px;
+}
+
+.game-container button {
+  padding: 10px 18px;
+  margin-top: 15px;
+  border: none;
+  border-radius: 8px;
+  background-color: #4caf7f;
+  color: #fff;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 0.95rem;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.game-container button:hover {
+  background-color: #1f7a4f;
+  transform: translateY(-1px);
+}
+
 .board {
   position: relative;
   display: grid;
   grid-template-columns: repeat(3, 110px);
   grid-template-rows: repeat(3, 110px);
   gap: 10px;
+  margin: 20px 0;
+  padding: 14px;
+  background-color: #f5faf6;
+  border: 1px solid #cfe7dc;
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
 .cell {
@@ -18,6 +90,7 @@
   cursor: pointer;
   transition: 0.2s ease;
   user-select: none;
+  border-radius: 10px;
 }
 
 .cell:hover {
@@ -25,54 +98,11 @@
 }
 
 .win-cell {
-  background: #c9f7df;
-  box-shadow: 0 0 15px rgba(0, 180, 120, 0.4);
+  background: #baf3d6;
+  box-shadow: 0 0 20px rgba(0, 200, 130, 0.6);
+  animation: winPulse 0.5s ease-in-out infinite alternate;
+  transform-origin: center;
 }
-
-.win-line {
-  position: absolute;
-  background: #00c27a;
-  z-index: 5;
-  border-radius: 6px;
-  box-shadow: 0 0 15px rgba(0, 200, 130, 0.7);
-}
-
-.pattern-0 { top: 55px; left: 0; right: 0; height: 6px; }
-.pattern-1 { top: 175px; left: 0; right: 0; height: 6px; }
-.pattern-2 { top: 295px; left: 0; right: 0; height: 6px; }
-.pattern-3 { left: 55px; top: 0; bottom: 0; width: 6px; }
-.pattern-4 { left: 175px; top: 0; bottom: 0; width: 6px; }
-.pattern-5 { left: 295px; top: 0; bottom: 0; width: 6px; }
-
-.pattern-6 {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 495px; /* 350px */
-  height: 6px; /* line thickness */
-  background: #00c27a;
-  transform: rotate(45deg);
-  transform-origin: top left;
-  border-radius: 6px;
-  z-index: 5;
-  box-shadow: 0 0 15px rgba(0, 200, 130, 0.7);
-}
-
-/* Top-right → bottom-left */
-.pattern-7 {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 495px; /* 350px */
-  height: 6px;
-  background: #00c27a;
-  transform: rotate(-45deg);
-  transform-origin: top right;
-  border-radius: 6px;
-  z-index: 5;
-  box-shadow: 0 0 15px rgba(0, 200, 130, 0.7);
-}
-
 
 .game-over .cell {
   cursor: default;
@@ -81,4 +111,26 @@
 
 .game-over .cell:hover {
   background: #ffffff;
+}
+
+@keyframes gameFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes winPulse {
+  from {
+    box-shadow: 0 0 10px rgba(0, 200, 130, 0.4);
+    transform: scale(1);
+  }
+  to {
+    box-shadow: 0 0 28px rgba(0, 200, 130, 0.9);
+    transform: scale(1.04);
+  }
 }

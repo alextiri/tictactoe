@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom"
 import { useState, useEffect } from "react";
 import './profile.css'
 import "@radix-ui/themes/styles.css";
-import { Theme } from "@radix-ui/themes";
 import * as Popover from "@radix-ui/react-popover";
 
 
@@ -31,6 +30,9 @@ export default function Profile() {
     const [history, setHistory] = useState<GameHistoryEntry[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
+
+    const storedUser = localStorage.getItem("user");
+    const user = storedUser ? JSON.parse(storedUser) : null;
     
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -145,10 +147,12 @@ export default function Profile() {
 
     return (
         <div className="profile">
-            <h1 className="profile-title">This is your profile</h1>
+            <h1 className="profile-title">
+                {user ? `Welcome back, ${user.username}` : "Welcome back"}
+            </h1>
             <h2 className="history-title">Game History</h2>
             {currentGames.length === 0 ? (
-                <p>No games played yet</p>
+                <p className="no-games">No games played yet</p>
             ) : (
                 <table className="history-table">
                     <thead>
@@ -163,7 +167,13 @@ export default function Profile() {
                         {currentGames.map((game) => (
                             <tr key={game.gameId}>
                                 <td>{game.gameCode}</td>
-                                <td>{game.winner ?? "Pending"}</td>
+                                <td>
+                                    {game.winner
+                                        ? game.winner
+                                        : game.moves.length === 9
+                                        ? "Draw"
+                                        : "Pending"}
+                                </td>
                                 <td>{new Date(game.createdAt).toLocaleString()}</td>
                                 <td>
                                     <Popover.Root>
@@ -187,7 +197,7 @@ export default function Profile() {
                                                     ) : (
                                                         <ul className="profile-moves-list">
                                                             {game.moves.map((move) => (
-                                                                <li key={move.moveNumber}>
+                                                                <li key={`${game.gameId}-${move.moveNumber}-${move.square}`}>
                                                                     <span className="move-num">#{move.moveNumber}</span>
                                                                     <span className="move-user">{move.username}</span>
                                                                     <span className="move-symbol">{move.symbol}</span>

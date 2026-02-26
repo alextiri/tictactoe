@@ -45,6 +45,6 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "src/testConnection.ts"],
   "exclude": ["node_modules"]
 }

@@ -1,6 +1,7 @@
 import type { Request, Response, NextFunction } from 'express';
-import pool from '../db.js';
 import crypto from 'crypto';
+import { User, Game, GameMove } from '../models/associations.js';
+import { Op } from 'sequelize';
 
 interface IdParams {
   id: string;
@@ -9,19 +10,19 @@ interface IdParams {
 export const createGame = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { userId } = (req as any).user;
+
     const gameCode = crypto.randomBytes(3).toString('hex').toUpperCase();
 
-    const initialBoard = { cells: ["", "", "", "", "", "", "", "", ""] };
-    const result = await pool.query(
-      `INSERT INTO games (player_x_id, game_code, current_turn, board)
-      VALUES ($1, $2, 'X', $3)
-      RETURNING *`,
-    [userId, gameCode, initialBoard]
-    );
+    const newGame = await Game.create({
+      player_x_id: userId,
+      game_code: gameCode,
+      current_turn: 'X',
+      board: Array(9).fill("")
+    })
 
     res.status(201).json({
-      message: 'Game created succesfully',
-      game: result.rows[0],
+      message: 'Game created successfully',
+      game: newGame.toJSON(),
     });
   } catch (error) {
     console.log('Error creating game', error);
@@ -32,57 +33,44 @@ export const createGame = async (req: Request, res: Response, next: NextFunction
 export const getUserGameHistory = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { userId } = (req as any).user;
-    const result = await pool.query(`
-      SELECT 
-        g.id AS game_id,
-        g.game_code,
-        g.winner,
-        g.created_at,
-        gm.move_number,
-        gm.symbol,
-        gm.square,
-        u.username
-      FROM games g
-      JOIN game_moves gm ON g.id = gm.game_id
-      JOIN users u ON gm.player_id = u.id
-      WHERE g.player_x_id = $1 OR g.player_o_id = $1
-      ORDER BY g.id, gm.move_number
-    `, [userId]);
 
-    const history: {
-      gameId: number;
-      gameCode: string;
-      winner: string | null;
-      createdAt: string;
-      moves: { moveNumber: number; symbol: string; square: number; username: string }[];
-    }[] = [];
+    const games = await Game.findAll({
+      where: {
+        [Op.or]: [
+          { player_x_id: userId },
+          { player_o_id: userId }
+        ]
+      },
+      include: [
+        {
+          model: GameMove,
+          as: 'moves',
+          include: [
+            {
+              model: User,
+              as: 'player',
+              attributes: ['username']
+            }
+          ],
+          order: [['move_number', 'ASC']]
+        }
+      ],
+      order: [['id', 'ASC']]
+    })
 
-    let currentGameId: number | null = null;
-    let currentGame: typeof history[0] | null = null;
+    const history = games.map(game => ({
+      gameId: game.id,
+      gameCode: game.game_code,
+      winner: game.winner,
+      createdAt: game.createdAt.toISOString(),
+      moves: (game.moves ?? []).map(move => ({
+        moveNumber: move.move_number,
+        symbol: move.symbol,
+        square: move.square,
+        username: move.player!.username
+      }))
+    }));
 
-    for (const row of result.rows) {
-      if (row.game_id !== currentGameId) {
-        if (currentGame) history.push(currentGame);
-        currentGameId = row.game_id;
-        currentGame = {
-          gameId: row.game_id,
-          gameCode: row.game_code,
-          winner: row.winner,
-          createdAt: row.created_at,
-          moves: []
-        };
-      }
-
-      if (currentGame) {
-        currentGame.moves.push({
-          moveNumber: row.move_number,
-          symbol: row.symbol,
-          square: row.square,
-          username: row.username
-        });
-      }
-    }
-    if (currentGame) history.push(currentGame);
     res.json({ history });
   } catch (error) {
     next(error);
@@ -95,16 +83,16 @@ export const getGameById = async (req: Request, res: Response, next: NextFunctio
     const { id } = req.params as unknown as IdParams;
     const gameId = parseInt(id, 10);
 
-    const result = await pool.query(
-      'SELECT * FROM games WHERE id = $1',
-      [gameId]
-    );
-
-    if(result.rows.length === 0) {
-      return res.status(404).json({ message: 'Game not found'});
+    if(isNaN(gameId)) {
+      return res.status(400).json({ message: 'Invaid game ID' });
     }
 
-    res.json({ game: result.rows[0] });
+    const game = await Game.findByPk(gameId);
+    if(!game) {
+      return res.status(400).json({ message: 'No game found for that ID' });
+    }
+
+    res.json({ game: game.toJSON() });
   } catch (error) {
     next(error);
   }
@@ -115,50 +103,44 @@ export const joinGame = async (req: Request, res: Response, next: NextFunction) 
     const { gameCode } = req.body;
     const { userId } = (req as any).user;
 
-    if(!gameCode || typeof(gameCode) !== "string") {
-      return res.status(400).json({ message: "Game code is required"});
+    if(!gameCode || typeof gameCode !== 'string') {
+      return res.status(400).json({ message: 'Game code required' });
     }
 
-    const gameResult = await pool.query(
-      `SELECT * FROM games WHERE game_code = $1`,
-      [gameCode.toUpperCase()]
-    );
+    const game = await Game.findOne({
+      where: { game_code: gameCode.toUpperCase() }
+    });
 
-    if(gameResult.rows.length === 0) {
-      return res.status(400).json({ message: "Game not found"});
+    if(!game) {
+      return res.status(400).json({ message: 'Game not found' });
     }
 
-    const game = gameResult.rows[0];
-
-    if(game.status === "finished") {
-      return res.status(400).json({ message: "Game already finished"});
+    if(game.status === 'finished') {
+      return res.status(400).json({ message: 'Game already finished' });
     }
-    if(game.player_x_id === userId || game.player_o_id === userId) {
+
+    if (game.player_x_id === userId || game.player_o_id === userId) {
       return res.json({
-        message: "Rejoined game",
-        game
+        message: 'Rejoined game',
+        game: game.toJSON()
       });
     }
-    if(game.player_x_id && game.player_o_id) {
-      return res.status(400).json({ message: "Game is already full" });
+
+    if (game.player_x_id && game.player_o_id) {
+      return res.status(400).json({ message: 'Game is already full' });
     }
 
     if (!game.player_o_id) {
-      const updated = await pool.query(
-        `UPDATE games
-         SET player_o_id = $1,
-             updated_at = NOW()
-         WHERE id = $2
-         RETURNING *`,
-        [userId, game.id]
-      );
+      game.player_o_id = userId;
+      await game.save();
 
       return res.json({
-        message: "Joined game as player O",
-        game: updated.rows[0]
+        message: 'Joined game as player O',
+        game: game.toJSON()
       });
     }
-    return res.status(400).json({ message: "Unable to join game" });
+
+    return res.status(400).json({ message: 'Unable to join game' });
   } catch(error) {
     next(error);
   }
@@ -166,7 +148,7 @@ export const joinGame = async (req: Request, res: Response, next: NextFunction) 
 
 export const makeMove = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { id } = req.params as unknown as IdParams
+    const { id } = req.params as unknown as IdParams;
     const gameId = parseInt(id, 10);
     const { square } = req.body;
     const { userId } = (req as any).user;
@@ -179,142 +161,91 @@ export const makeMove = async (req: Request, res: Response, next: NextFunction) 
       [1,4,7],
       [2,5,8],
       [0,4,8],
-      [2,4,6],
+      [2,4,6]
     ];
 
-    const checkWinner = (board: string[]): number[] | 'DRAW' | null => {
-      for (const pattern of WIN_PATTERNS) {
-        const [a, b, c] = pattern;
-        if (board[a] !== "" && board[a] === board[b] && board[a] === board[c]) {
-          return pattern;
-        }
-      }
-      if (board.every(cell => cell !== "")) return 'DRAW';
-      return null;
-    };
-
     if (square === undefined || square < 0 || square > 8) {
-      return res.status(400).json({ message: "Invalid square" });
+      return res.status(400).json({ message: 'Invalid square' });
     }
 
-    const gameResult = await pool.query(
-      `SELECT * FROM games WHERE id = $1`,
-      [gameId]
-    );
-    if (gameResult.rows.length === 0) {
-      return res.status(404).json({ message: "Game not found" });
+    const game = await Game.findByPk(gameId);
+    if (!game) {
+      return res.status(400).json({ message: 'Game not found' });
     }
 
-    const game = gameResult.rows[0];
     if (userId !== game.player_x_id && userId !== game.player_o_id) {
-      return res.status(403).json({ message: "Not a player in this game" });
+      return res.status(403).json({ message: 'Not a player in this game' });
     }
+
     if (game.status === 'finished') {
-      return res.status(400).json({ message: "Game already finished" });
+      return res.status(400).json({ message: 'Game already finished' });
     }
 
-    const playerSymbol =
-    userId === game.player_x_id ? 'X' :
-    userId === game.player_o_id ? 'O' : null;
+    const moves = await GameMove.findAll({
+      where: { game_id: gameId },
+      order: [['move_number', 'ASC']],
+    });
 
-    if (playerSymbol !== game.current_turn) {
-      return res.status(400).json({ message: "Not your turn" });
+    const board: string[] = Array(9).fill('');
+    for (const move of moves) {
+      board[move.square] = move.symbol;
     }
-    // let playerSymbol = 'X';
-    // if (game.board.cells.filter(cell => cell === 'X').length <= game.board.cells.filter(cell => cell === 'O').length) {
-    //     playerSymbol = 'X';
-    // } else {
-    //     playerSymbol = 'O';
-    // }
 
-    game.current_turn = playerSymbol;
-    const board = game.board.cells;
-    if (board[square] !== "") {
-      return res.status(400).json({ message: "Square already occupied" });
+    if (board[square] !== '') {
+      return res.status(400).json({ message: 'Square already occupied' });
     }
+
+    let playerSymbol: 'X' | 'O' = 'X';
+    const xCount = board.filter(cell => cell === 'X').length;
+    const oCount = board.filter(cell => cell === 'O').length;
+    playerSymbol = xCount <= oCount ? 'X' : 'O';
 
     board[square] = playerSymbol;
-    const nextTurn = playerSymbol === 'X' ? 'O' : 'X';
-    const moveCountResult = await pool.query(
-      `SELECT COUNT(*) FROM game_moves WHERE game_id = $1`,
-      [gameId]
-    );
 
-    const moveNumber = parseInt(moveCountResult.rows[0].count, 10) + 1;
+    const moveNumber = moves.length + 1;
+    await GameMove.create({
+      game_id: gameId,
+      move_number: moveNumber,
+      player_id: userId,
+      symbol: playerSymbol,
+      square,
+    });
 
-    await pool.query(
-      `INSERT INTO game_moves (game_id, move_number, player_id, symbol, square)
-      VALUES ($1, $2, $3, $4, $5)`,
-      [gameId, moveNumber, userId, playerSymbol, square]
-    );
-
-    await pool.query(
-      `UPDATE games
-      SET board = $1,
-          current_turn = $2,
-          last_move_at = NOW(),
-          updated_at = NOW()
-      WHERE id = $3`,
-      [{ cells: board }, nextTurn, gameId]
-    );
-
-    const winnerPattern = checkWinner(board);
-    let status = 'ongoing';
-    let winnerChar = null;
-
-    if (winnerPattern && winnerPattern !== 'DRAW') {
-        status = 'finished';
+    let winnerChar: 'X' | 'O' | null = null;
+    let winnerPattern: number[] | null = null;
+    for (const pattern of WIN_PATTERNS) {
+      const [a, b, c] = pattern;
+      if (board[a] && board[a] === board[b] && board[a] === board[c]) {
         winnerChar = playerSymbol;
-    } else if (winnerPattern === 'DRAW') {
-        status = 'finished';
+        winnerPattern = pattern;
+        break;
+      }
     }
 
-    await pool.query(
-      `UPDATE games
-      SET board = $1,
-          current_turn = $2,
-          winner = $3,
-          status = $4,
-          last_move_at = NOW(),
-          updated_at = NOW()
-      WHERE id = $5`,
-      [{ cells: board }, nextTurn, winnerChar, status, gameId]
-    );
+    const isDraw = !winnerChar && board.every(cell => cell !== '');
 
-    const updatedGame = await pool.query(
-      `SELECT * FROM games WHERE id = $1`,
-      [gameId]
-    );
-    const updatedGameRow = updatedGame.rows[0];
+    game.board = board;
+    game.current_turn = playerSymbol === 'X' ? 'O' : 'X';
+    game.winner = winnerChar;
+    game.status = winnerChar || isDraw ? 'finished' : 'ongoing';
+
+    await game.save();
+
     res.json({
       game: {
-        id: updatedGameRow.id,
-        player_x_id: updatedGameRow.player_x_id,
-        player_o_id: updatedGameRow.player_o_id,
-        game_code: updatedGameRow.game_code,
-        current_turn: nextTurn,
-        board: { cells: board },
-        winner: winnerChar,
-        status,
-        winningPattern: winnerPattern === 'DRAW' ? null : winnerPattern
+        id: game.id,
+        player_x_id: game.player_x_id,
+        player_o_id: game.player_o_id,
+        game_code: game.game_code,
+        current_turn: game.current_turn,
+        board,
+        winner: game.winner,
+        status: game.status,
+        winningPattern: winnerPattern,
       }
     });
-    } catch (error) {
+
+  } catch (error) {
     next(error);
   }
-}
-
-// export const deleteItem = (req: Request<IdParams>, res: Response, next: NextFunction) => {
-//   try {
-//     const id = parseInt(req.params.id, 10);
-//     const itemIndex = items.findIndex((i) => i.id === id);
-//     if (itemIndex === -1) {
-//       res.status(404).json({ message: 'Item not found' });
-//       return;
-//     }
-//     const deletedItem = items.splice(itemIndex, 1)[0];
-//     res.json(deletedItem);
-//   } catch (error) {
-//     next(error);
-//   }
-// };
+};

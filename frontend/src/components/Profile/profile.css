@@ -139,7 +139,6 @@
 }
 
 .profile-popover-body {
-  max-height: 220px;
   overflow-y: auto;
 }
 
@@ -234,3 +233,17 @@
   font-size: 0.85rem;
   font-weight: 500;
 }
+
+.profile .no-games {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #4caf7f;
+  margin: 20px 0;
+  text-align: center;
+  padding: 10px;
+  border: 1px dashed #cfe7dc;
+  border-radius: 8px;
+  background-color: #f5faf6;
+}
+
+

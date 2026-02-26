@@ -9,7 +9,7 @@ interface Game {
   player_o_id: number | null;
   game_code: string;
   current_turn: string;
-  board: { cells: string[] };
+  board: string[];
   status: "ongoing" | "finished";
   winner: string | null;
   winningPattern: number[] | null;
@@ -21,20 +21,11 @@ export default function Game() {
     const [winner, setWinner] = useState<string | null>(null);
     const [winningPattern, setWinningPattern] = useState<number[] | null>(null);
     const [isDraw, setIsDraw] = useState(false);
+    const [errMessage, setErrorMessage] = useState('');
     const navigate = useNavigate();
 
-    const WIN_PATTERNS = [
-        [0,1,2],
-        [3,4,5],
-        [6,7,8],
-        [0,3,6],
-        [1,4,7],
-        [2,5,8],
-        [0,4,8],
-        [2,4,6],
-    ];
-
     const handleCellClick = async (index: number) => {
+        setErrorMessage('');
         if(!game || winner) return;
         
         const token = localStorage.getItem("token");
@@ -66,7 +57,7 @@ export default function Game() {
                 }
             }
         } catch(err: any) {
-            console.log(err.message);
+            setErrorMessage(err.message);
         }
     }
 
@@ -112,16 +103,8 @@ export default function Game() {
             {isDraw && <h2 className="draw-text">It's a draw!</h2>}
 
             <div className={`board ${winner || isDraw ? "game-over" : ""}`}>
-            
-            {winningPattern && (
-                <div
-                className={`win-line pattern-${WIN_PATTERNS.findIndex(
-                    p => JSON.stringify(p) === JSON.stringify(winningPattern)
-                )}`}
-                />
-            )}
 
-            {game.board.cells.map((cell, idx) => (
+            {game.board.map((cell, idx) => (
                 <div
                 key={idx}
                 className={`cell ${
@@ -134,7 +117,9 @@ export default function Game() {
             ))}
             </div>
             <button onClick={() => navigate('/profile') }>Return to Main Page</button>
+            {errMessage && (
+                <p className="error-message">{errMessage}</p>
+            )}
         </div>
     );
-
 }
