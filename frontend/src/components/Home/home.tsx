@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './home.css'
+import { URLS } from '../../config/utils';
 
 export default function Home() {
     const [mail, setMail] = useState('');
@@ -30,7 +31,7 @@ export default function Home() {
             setLoading(true);
             setErrorMessage(null);
 
-            const res = await fetch('http://localhost:3000/api/users/login', {
+            const res = await fetch(URLS.login, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'

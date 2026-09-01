@@ -2,6 +2,7 @@ import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import './game.css'
+import { URLS } from "../../config/utils";
 
 interface Game {
   id: number;
@@ -32,7 +33,7 @@ export default function Game() {
         if(!token) return;
 
         try {
-            const res = await fetch(`http://localhost:3000/api/games/${game.id}/move`, {
+            const res = await fetch(`${URLS.games}/${game.id}/move`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -67,7 +68,7 @@ export default function Game() {
                 const token = localStorage.getItem("token");
                 if(!token) return;
                 
-                const res = await fetch(`http://localhost:3000/api/games/${id}`, {
+                const res = await fetch(`${URLS.games}/${id}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                     },

@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import './profile.css'
 import "@radix-ui/themes/styles.css";
 import * as Popover from "@radix-ui/react-popover";
+import { URLS } from "../../config/utils";
 
 
 interface Move {
@@ -52,7 +53,7 @@ export default function Profile() {
         }
 
         try {
-            const res = await fetch('http://localhost:3000/api/games', {
+            const res = await fetch(URLS.games, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -97,7 +98,7 @@ export default function Profile() {
 
         try {
             setJoinError(null);
-            const res = await fetch("http://localhost:3000/api/games/join/", {
+            const res = await fetch(`${URLS.games}/join/`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -124,7 +125,7 @@ export default function Profile() {
             if(!token) return;
 
             try {
-                const res = await fetch("http://localhost:3000/api/games/history", {
+                const res = await fetch(`${URLS.games}/history`, {
                     headers: { Authorization: `Bearer ${token}`}
                 });
                 if(!res.ok) throw new Error("Failed to fetch game history");

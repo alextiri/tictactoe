@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom"
 import { useState } from "react";
 import './register.css'
+import { URLS } from "../../config/utils";
 
 export default function Register() {
     const [username, setUsername] = useState('');
@@ -20,7 +21,7 @@ export default function Register() {
 
         try {
             setLoading(true);
-            const response = await fetch('http://localhost:3000/api/users/register', {
+            const response = await fetch(URLS.register, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

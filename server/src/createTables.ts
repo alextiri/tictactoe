@@ -1,21 +1,28 @@
 import { sequelize } from "./config/database.js";
-import './models/User.js';
-import './models/Game.js';
-import './models/GameMove.js';
-import './models/associations.js'
+import { Umzug, SequelizeStorage } from "umzug";
 
-async function createTables() {
-    try {
-        await sequelize.authenticate();
-        console.log("Database connected");
+async function runMigrations() {
+  try {
+    await sequelize.authenticate();
+    console.log("Database connected");
 
-        await sequelize.sync({ force: true });
-        console.log("Tables created");
-    } catch(err) {
-        console.log("Unable to create tables", err);
-    } finally {
-        await sequelize.close();
-    }
+    const umzug = new Umzug({
+      migrations: {
+        glob: "migrations/*.js",
+      },
+      context: sequelize.getQueryInterface(),
+      storage: new SequelizeStorage({ sequelize }),
+      logger: console,
+    });
+
+    await umzug.up();
+    console.log("All migrations executed successfully!");
+  } catch (err) {
+    console.error("Error running migrations:", err);
+  } finally {
+    await sequelize.close();
+    console.log("Database connection closed");
+  }
 }
 
-createTables();
+runMigrations();
