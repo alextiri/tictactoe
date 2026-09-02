@@ -8,8 +8,8 @@ interface Game {
   id: number;
   player_x_id: number;
   player_o_id: number | null;
-  game_code: string;
-  current_turn: string;
+  gameCode: string;
+  currentTurn: string;
   board: string[];
   status: "ongoing" | "finished";
   winner: string | null;
@@ -97,9 +97,9 @@ export default function Game() {
 
     return (
         <div className="game-container">
-            <h1>Game Code: {game.game_code}</h1>
+            <h1>Game Code: {game.gameCode}</h1>
 
-            {!winner && !isDraw && <p>Current turn: {game.current_turn}</p>}
+            {!winner && !isDraw && <p>Current turn: {game.currentTurn}</p>}
             {winner && <h2 className="winner-text">Winner: {winner}</h2>}
             {isDraw && <h2 className="draw-text">It's a draw!</h2>}
 

@@ -98,7 +98,7 @@ export default function Profile() {
 
         try {
             setJoinError(null);
-            const res = await fetch(`${URLS.games}/join/`, {
+            const res = await fetch(`${URLS.games}/join`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
