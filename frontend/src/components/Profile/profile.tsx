@@ -29,6 +29,7 @@ export default function Profile() {
     const [joinError, setJoinError] = useState<string | null>(null);
 
     const [history, setHistory] = useState<GameHistoryEntry[]>([]);
+    const [historyLoading, setHistoryLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
 
@@ -122,7 +123,10 @@ export default function Profile() {
     useEffect(() => {
         const fetchHistory = async () => {
             const token = localStorage.getItem("token");
-            if(!token) return;
+            if(!token) {
+                setHistoryLoading(false);
+                return;
+            }
 
             try {
                 const res = await fetch(`${URLS.games}/history`, {
@@ -137,6 +141,8 @@ export default function Profile() {
                 setHistory(data.history);
             } catch(error) {
                 console.error(error);
+            } finally {
+                setHistoryLoading(false);
             }
         };
         fetchHistory();
@@ -152,7 +158,9 @@ export default function Profile() {
                 {user ? `Welcome back, ${user.username}` : "Welcome back"}
             </h1>
             <h2 className="history-title">Game History</h2>
-            {currentGames.length === 0 ? (
+            {historyLoading ? (
+                <p className="no-games">Loading your game history...</p>
+            ) : currentGames.length === 0 ? (
                 <p className="no-games">No games played yet</p>
             ) : (
                 <table className="history-table">

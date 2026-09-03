@@ -19,6 +19,13 @@ export default function Register() {
             return;
         }
 
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+        if (!emailRegex.test(email)) {
+            setError('Please enter a valid email address');
+            return;
+        }
+
         try {
             setLoading(true);
             const response = await fetch(URLS.register, {

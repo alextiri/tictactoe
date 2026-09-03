@@ -1,8 +1,17 @@
 package com.tictactoe.serverjava.dtos;
 
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+
 public record RegisterRequest(
-    String username,
+    @NotBlank String username,
+    
+    @NotBlank
+    @Pattern(
+        regexp = "^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$",
+        message = "Please enter a valid email address"
+    )
     String email,
-    String password
-) {
-}
+
+    @NotBlank String password
+) {}
