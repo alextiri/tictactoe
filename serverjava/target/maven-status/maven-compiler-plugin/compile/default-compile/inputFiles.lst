@@ -1,5 +1,6 @@
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/ServerjavaApplication.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/config/SecurityConfig.java
+/Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/config/WebSocketConfig.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/controllers/GameController.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/controllers/GlobalExceptionHandler.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/controllers/TestController.java
@@ -12,6 +13,7 @@
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/dtos/RegisterRequest.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/dtos/RegisterResponse.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/dtos/UserResponse.java
+/Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/middlewares/GameWebSocketHandler.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/middlewares/JwtAuthenticationFilter.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/models/Game.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/models/GameMove.java

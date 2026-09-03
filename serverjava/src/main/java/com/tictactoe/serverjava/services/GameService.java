@@ -2,6 +2,7 @@ package com.tictactoe.serverjava.services;
 
 import com.tictactoe.serverjava.dtos.GameHistoryResponse;
 import com.tictactoe.serverjava.dtos.GameMoveResponse;
+import com.tictactoe.serverjava.middlewares.GameWebSocketHandler;
 import com.tictactoe.serverjava.models.Game;
 import com.tictactoe.serverjava.models.GameMove;
 import com.tictactoe.serverjava.repositories.GameMoveRepository;
@@ -20,15 +21,18 @@ public class GameService {
     private final GameRepository gameRepository;
     private final GameMoveRepository gameMoveRepository;
     private final UserRepository userRepository;
+    private final GameWebSocketHandler gameWebSocketHandler;
 
     public GameService(
         GameRepository gameRepository,
         GameMoveRepository gameMoveRepository,
+        GameWebSocketHandler gameWebSocketHandler,
         UserRepository userRepository
     ) {
         this.gameRepository = gameRepository;
         this.gameMoveRepository = gameMoveRepository;
         this.userRepository = userRepository;
+        this.gameWebSocketHandler = gameWebSocketHandler;
     }
 
     public Game getGameById(Integer gameId) {
@@ -211,6 +215,8 @@ public class GameService {
             game.setCurrentTurn("X".equals(symbol) ? "O" : "X");
         }
 
-        return gameRepository.save(game);
+        Game savedGame = gameRepository.save(game);
+        gameWebSocketHandler.broadcastGame(savedGame);
+        return savedGame;
     }
 }

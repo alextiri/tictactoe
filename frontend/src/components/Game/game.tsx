@@ -103,6 +103,37 @@ export default function Game() {
         fetchGame();
     }, [id])
 
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) return;
+
+        const socket = new WebSocket(`${import.meta.env.VITE_WS_URL}/ws/games?gameId=${id}&token=${token}`);
+        socket.onmessage = (event) => {
+            const updatedGame = JSON.parse(event.data);
+            setGame(updatedGame);
+            if (updatedGame.status === "finished") {
+                if (updatedGame.winner) {
+                    setWinner(updatedGame.winner);
+                    setWinningPattern(updatedGame.winningPattern);
+                } else {
+                    setIsDraw(true);
+                }
+            }
+        };
+
+        socket.onopen = () => {
+            console.log("WebSocket connected");
+        };
+
+        socket.onclose = () => {
+            console.log("WebSocket disconnected");
+        };
+
+        return () => {
+            socket.close();
+        };
+    }, [id]);
+
     if (!game) return <p>Loading game...</p>;
 
     return (
