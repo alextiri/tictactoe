@@ -6,8 +6,8 @@ import { URLS } from "../../config/utils";
 
 interface Game {
   id: number;
-  player_x_id: number;
-  player_o_id: number | null;
+  playerXId: number;
+  playerOId: number | null;
   gameCode: string;
   currentTurn: string;
   board: string[];
@@ -24,6 +24,16 @@ export default function Game() {
     const [isDraw, setIsDraw] = useState(false);
     const [errMessage, setErrorMessage] = useState('');
     const navigate = useNavigate();
+
+    const storedUser = localStorage.getItem("user");
+    const user = storedUser ? JSON.parse(storedUser) : null;
+
+    const playerSymbol =
+        game?.playerXId === user?.id
+            ? "X"
+            : game?.playerOId === user?.id
+            ? "O"
+            : null;
 
     const handleCellClick = async (index: number) => {
         setErrorMessage('');
@@ -99,7 +109,14 @@ export default function Game() {
         <div className="game-container">
             <h1>Game Code: {game.gameCode}</h1>
 
-            {!winner && !isDraw && <p>Current turn: {game.currentTurn}</p>}
+            {!winner && !isDraw && (
+                <p>
+                    {game.currentTurn === playerSymbol
+                        ? `Your turn (${playerSymbol})`
+                        : `Waiting for ${game.currentTurn}`
+                    }
+                </p>
+            )}
             {winner && <h2 className="winner-text">Winner: {winner}</h2>}
             {isDraw && <h2 className="draw-text">It's a draw!</h2>}
 

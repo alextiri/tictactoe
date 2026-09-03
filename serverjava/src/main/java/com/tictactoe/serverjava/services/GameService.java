@@ -131,10 +131,6 @@ public class GameService {
                 new IllegalArgumentException("No game found for that ID")
             );
 
-        if (!game.getPlayerXId().equals(userId) && !userId.equals(game.getPlayerOId())) {
-            throw new IllegalArgumentException("You are not a player in this game");
-        }
-
         if ("finished".equals(game.getStatus())) {
             throw new IllegalArgumentException("Game is already finished");
         }
@@ -146,18 +142,19 @@ public class GameService {
             throw new IllegalArgumentException("Square is already occupied");
         }
 
-        int xCount = 0;
-        int oCount = 0;
+        String symbol;
 
-        for (GameMove move : moves) {
-            if ("X".equals(move.getSymbol())) {
-                xCount++;
-            } else {
-                oCount++;
-            }
+        if (game.getPlayerXId().equals(userId)) {
+            symbol = "X";
+        } else if (game.getPlayerOId() != null && game.getPlayerOId().equals(userId)) {
+            symbol = "O";
+        } else {
+            throw new IllegalArgumentException("You are not a player in this game");
         }
 
-        String symbol = xCount <= oCount ? "X" : "O";
+        if (!game.getCurrentTurn().equals(symbol)) {
+            throw new IllegalArgumentException("It is not your turn");
+        }
 
         GameMove move = new GameMove();
         move.setGameId(gameId);
