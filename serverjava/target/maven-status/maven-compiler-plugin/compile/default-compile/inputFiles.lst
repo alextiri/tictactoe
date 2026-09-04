@@ -3,6 +3,7 @@
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/config/WebSocketConfig.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/controllers/GameController.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/controllers/GlobalExceptionHandler.java
+/Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/controllers/HealthController.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/controllers/TestController.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/controllers/UserController.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/dtos/GameHistoryListResponse.java

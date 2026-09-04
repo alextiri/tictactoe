@@ -23,6 +23,7 @@ export default function Game() {
     const [winningPattern, setWinningPattern] = useState<number[] | null>(null);
     const [isDraw, setIsDraw] = useState(false);
     const [errMessage, setErrorMessage] = useState('');
+    const [moveLoading, setMoveLoading] = useState(false);
     const navigate = useNavigate();
 
     const storedUser = localStorage.getItem("user");
@@ -37,10 +38,12 @@ export default function Game() {
 
     const handleCellClick = async (index: number) => {
         setErrorMessage('');
-        if(!game || winner) return;
+        if (!game || winner || moveLoading) return;
         
         const token = localStorage.getItem("token");
         if(!token) return;
+        
+        setMoveLoading(true);
 
         try {
             const res = await fetch(`${URLS.games}/${game.id}/move`, {
@@ -69,6 +72,8 @@ export default function Game() {
             }
         } catch(err: any) {
             setErrorMessage(err.message);
+        } finally {
+            setMoveLoading(false)
         }
     }
 
