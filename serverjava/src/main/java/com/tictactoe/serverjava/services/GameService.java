@@ -239,6 +239,10 @@ public class GameService {
                 .ifPresent(user -> game.setPlayerOUsername(user.getUsername()));
         }
 
+        game.setMoves(
+            gameMoveRepository.findByGameIdOrderByMoveNumberAsc(game.getId())
+        );
+        
         return game;
     }
 }

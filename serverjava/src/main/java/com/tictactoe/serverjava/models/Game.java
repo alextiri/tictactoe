@@ -32,6 +32,9 @@ public class Game {
     @Transient
     private String playerOUsername;
 
+    @Transient
+    private List<GameMove> moves;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(nullable = false, columnDefinition = "json")
     private List<String> board;
@@ -93,6 +96,14 @@ public class Game {
 
     public void setPlayerOUsername(String playerOUsername) {
         this.playerOUsername = playerOUsername;
+    }
+
+    public List<GameMove> getMoves() {
+        return moves;
+    }
+
+    public void setMoves(List<GameMove> moves) {
+        this.moves = moves;
     }
 
     public List<String> getBoard() {

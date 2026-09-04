@@ -4,6 +4,7 @@ import './profile.css'
 import "@radix-ui/themes/styles.css";
 import * as Popover from "@radix-ui/react-popover";
 import { URLS } from "../../config/utils";
+import BubbleBackground from "../BubbleBackground";
 
 
 interface Move {
@@ -154,9 +155,12 @@ export default function Profile() {
 
     return (
         <div className="profile">
-            <h1 className="profile-title">
-                {user ? `Welcome back, ${user.username}` : "Welcome back"}
-            </h1>
+            <BubbleBackground/>
+            <div className="profile-header">
+                <h1 className="profile-title">
+                    {user ? `Welcome back, ${user.username}` : "Welcome back"}
+                </h1>
+            </div>
             <h2 className="history-title">Game History</h2>
             {historyLoading ? (
                 <p className="no-games">Loading your game history...</p>
@@ -243,22 +247,24 @@ export default function Profile() {
                 </button>
                 </div>
             )}
-            <div className="join-game">
-                <button onClick={handleNewGame}>
-                    {loading ? "Creating..." : "New game"}
-                </button>
-                <input
-                    type="text"
-                    placeholder="Enter game code"
-                    value={joinCode}
-                    onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                />
-                <button onClick={handleJoinGame}>Join Game</button>
+            <div className="game-actions">
+                <div className="join-game">
+                    <button onClick={handleNewGame}>
+                        {loading ? "Creating..." : "New game"}
+                    </button>
+                    <input
+                        type="text"
+                        placeholder="Enter game code"
+                        value={joinCode}
+                        onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                    />
+                    <button onClick={handleJoinGame}>Join Game</button>
+                </div>
+                {joinError && (
+                    <p className="join-error">{joinError}</p>
+                )}
+                <button onClick={handleLogout}>Logout</button>
             </div>
-            {joinError && (
-                <p className="join-error">{joinError}</p>
-            )}
-            <button onClick={handleLogout}>Logout</button>
         </div>
     )
 }

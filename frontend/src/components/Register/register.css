@@ -1,30 +1,68 @@
 .register {
+  position: relative;
+  isolation: isolate;
+
   display: flex;
   justify-content: center;
   align-items: center;
   flex-direction: column;
+
   min-height: 100vh;
   width: 100vw;
+
   background-color: #f7faf6;
+
   font-family: 'Arial', sans-serif;
+
   padding: 20px;
   box-sizing: border-box;
 }
 
+.register > * {
+  position: relative;
+  z-index: 1;
+}
+
 .r-title {
-  font-size: 2rem;
+  font-size: 1.7rem;
   color: #1f7a4f;
-  margin-bottom: 10px;
+  margin: 0 0 4px;
   text-align: center;
 }
 
-.register-card {
-  background-color: #ffffff;
-  border-radius: 10px;
-  padding: 25px 30px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+.register-header {
+  background-color: #f5faf6;
+  border: 1px solid #cfe7dc;
+  border-radius: 14px;
+  padding: 25px 30px 11px;
+  margin-bottom: 10px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  text-align: center;
+
   width: 100%;
   max-width: 360px;
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.register-header p {
+  color: #555;
+  font-size: 1rem;
+  margin: 0 0 12px;
+}
+
+.register-card {
+  background-color: #f5faf6;
+  border: 1px solid #cfe7dc;
+  border-radius: 14px;
+  padding: 25px 30px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 360px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 15px;
@@ -37,18 +75,20 @@
 }
 
 .register-card input {
-  padding: 8px 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid #cfe7dc;
+  background-color: #ffffff;
   font-size: 0.95rem;
   width: 100%;
-  transition: border 0.2s ease, box-shadow 0.2s ease;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .register-card input:focus {
   outline: none;
   border-color: #4caf7f;
-  box-shadow: 0 0 4px rgba(76, 175, 127, 0.5);
+  box-shadow: 0 0 0 3px rgba(76, 175, 127, 0.15);
 }
 
 .register-buttons {
@@ -62,12 +102,16 @@
   flex: 1;
   padding: 10px 16px;
   border: none;
-  border-radius: 6px;
+  border-radius: 8px;
   background-color: #4caf7f;
   color: #fff;
   cursor: pointer;
-  font-weight: 500;
-  transition: background-color 0.2s ease;
+  font-weight: 600;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.register-buttons button:active {
+  transform: scale(0.98);
 }
 
 .register-buttons button:hover {

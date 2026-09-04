@@ -91,7 +91,6 @@ public class GameWebSocketHandler implements WebSocketHandler {
                 sessions.remove(session);
             }
         }
-
         System.out.println("WebSocket disconnected: " + session.getId());
     }
 

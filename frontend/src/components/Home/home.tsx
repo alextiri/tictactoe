@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import './home.css'
 import { URLS } from '../../config/utils';
+import BubbleBackground from '../BubbleBackground';
 
 export default function Home() {
     const [mail, setMail] = useState('');
@@ -62,9 +63,12 @@ export default function Home() {
 
     return (
     <div className='home'>
-        <h1>TicTacToes</h1>
-        <h2>(mmm toes...)</h2>
-        <p>Login here</p>
+        <BubbleBackground/>
+        <div className="home-header">
+            <h1>TicTacToes</h1>
+            <h2>(mmm toes...)</h2>
+            <p className="login-subtitle">Log in to play</p>
+        </div>
         <div className='login-card'>
             <div className='login-comp'>
                 <p>E-mail</p>

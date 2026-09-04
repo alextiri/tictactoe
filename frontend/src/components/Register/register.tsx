@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom"
 import { useState } from "react";
 import './register.css'
 import { URLS } from "../../config/utils";
+import BubbleBackground from "../BubbleBackground";
 
 export default function Register() {
     const [username, setUsername] = useState('');
@@ -53,7 +54,11 @@ export default function Register() {
 
     return (
         <div className="register">
-            <h1 className="r-title">Register here</h1>
+            <BubbleBackground/>
+            <div className="register-header">
+                <h1 className="r-title">Create your account</h1>
+                <p>Join the game!</p>
+            </div>
             <div className="register-card">
                 <div className="username">
                     <p>Username</p>

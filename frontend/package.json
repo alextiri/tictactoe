@@ -12,6 +12,10 @@
   "dependencies": {
     "@radix-ui/react-popover": "^1.1.15",
     "@radix-ui/themes": "^3.3.0",
+    "@tsparticles/configs": "^4.4.0",
+    "@tsparticles/preset-bubbles": "^4.4.0",
+    "@tsparticles/react": "^4.4.0",
+    "@tsparticles/slim": "^4.4.0",
     "bcrypt": "^6.0.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
