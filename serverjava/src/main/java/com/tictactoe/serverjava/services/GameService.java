@@ -36,7 +36,11 @@ public class GameService {
     }
 
     public Game getGameById(Integer gameId) {
-        return gameRepository.findById(gameId).orElse(null);
+        Game game = gameRepository.findById(gameId).orElse(null);
+        if(game == null) {
+            return null;
+        }
+        return addPlayerUsernames(game);
     }
 
     public List<GameHistoryResponse> getUserGameHistory(Integer userId) {
@@ -97,7 +101,8 @@ public class GameService {
         game.setWinner(null);
         game.setStatus("ongoing");
 
-        return gameRepository.save(game);
+        Game savedGame = gameRepository.save(game);
+        return addPlayerUsernames(savedGame);
     }
 
     public Game joinGame(Integer userId, String gameCode) {
@@ -120,7 +125,8 @@ public class GameService {
 
         if (game.getPlayerOId() == null) {
             game.setPlayerOId(userId);
-            return gameRepository.save(game);
+            Game savedGame = gameRepository.save(game);
+            return addPlayerUsernames(savedGame);
         }
 
         throw new IllegalArgumentException("Game is full");
@@ -216,7 +222,23 @@ public class GameService {
         }
 
         Game savedGame = gameRepository.save(game);
+        savedGame = addPlayerUsernames(savedGame);
+
         gameWebSocketHandler.broadcastGame(savedGame);
         return savedGame;
+    }
+
+    private Game addPlayerUsernames(Game game) {
+        if (game.getPlayerXId() != null) {
+            userRepository.findById(game.getPlayerXId())
+                .ifPresent(user -> game.setPlayerXUsername(user.getUsername()));
+        }
+
+        if (game.getPlayerOId() != null) {
+            userRepository.findById(game.getPlayerOId())
+                .ifPresent(user -> game.setPlayerOUsername(user.getUsername()));
+        }
+
+        return game;
     }
 }

@@ -26,6 +26,12 @@ public class Game {
     @Column(name = "player_o_id")
     private Integer playerOId;
 
+    @Transient
+    private String playerXUsername;
+
+    @Transient
+    private String playerOUsername;
+
     @JdbcTypeCode(SqlTypes.JSON)
     @Column(nullable = false, columnDefinition = "json")
     private List<String> board;
@@ -71,6 +77,22 @@ public class Game {
 
     public void setPlayerOId(Integer playerOId) {
         this.playerOId = playerOId;
+    }
+
+    public String getPlayerXUsername() {
+        return playerXUsername;
+    }
+
+    public void setPlayerXUsername(String playerXUsername) {
+        this.playerXUsername = playerXUsername;
+    }
+
+    public String getPlayerOUsername() {
+        return playerOUsername;
+    }
+
+    public void setPlayerOUsername(String playerOUsername) {
+        this.playerOUsername = playerOUsername;
     }
 
     public List<String> getBoard() {

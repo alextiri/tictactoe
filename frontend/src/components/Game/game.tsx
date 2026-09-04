@@ -5,15 +5,17 @@ import './game.css'
 import { URLS } from "../../config/utils";
 
 interface Game {
-  id: number;
-  playerXId: number;
-  playerOId: number | null;
-  gameCode: string;
-  currentTurn: string;
-  board: string[];
-  status: "ongoing" | "finished";
-  winner: string | null;
-  winningPattern: number[] | null;
+    id: number;
+    playerXId: number;
+    playerOId: number | null;
+    playerXUsername: string;
+    playerOUsername: string | null;
+    gameCode: string;
+    currentTurn: string;
+    board: string[];
+    status: "ongoing" | "finished";
+    winner: string | null;
+    winningPattern: number[] | null;
 }
 
 export default function Game() {
@@ -42,7 +44,7 @@ export default function Game() {
         
         const token = localStorage.getItem("token");
         if(!token) return;
-        
+
         setMoveLoading(true);
 
         try {
@@ -156,19 +158,30 @@ export default function Game() {
             {winner && <h2 className="winner-text">Winner: {winner}</h2>}
             {isDraw && <h2 className="draw-text">It's a draw!</h2>}
 
-            <div className={`board ${winner || isDraw ? "game-over" : ""}`}>
+            <div className="game-area">
+                <div className="players">
+                    <p className={game.currentTurn === "X" ? "current-player" : ""}>
+                        X: {game.playerXUsername}
+                    </p>
 
-            {game.board.map((cell, idx) => (
-                <div
-                key={idx}
-                className={`cell ${
-                    winningPattern?.includes(idx) ? "win-cell" : ""
-                }`}
-                onClick={() => handleCellClick(idx)}
-                >
-                {cell}
+                    <p className={game.currentTurn === "O" ? "current-player" : ""}>
+                        O: {game.playerOUsername ?? "Waiting for player..."}
+                    </p>
                 </div>
-            ))}
+
+                <div className={`board ${winner || isDraw ? "game-over" : ""}`}>
+                    {game.board.map((cell, idx) => (
+                        <div
+                        key={idx}
+                        className={`cell ${
+                            winningPattern?.includes(idx) ? "win-cell" : ""
+                        }`}
+                        onClick={() => handleCellClick(idx)}
+                        >
+                        {cell}
+                        </div>
+                    ))}
+                </div>
             </div>
             <button onClick={() => navigate('/profile') }>Return to Main Page</button>
             {errMessage && (

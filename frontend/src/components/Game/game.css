@@ -64,6 +64,25 @@
   transform: translateY(-1px);
 }
 
+.game-area {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.players {
+  position: absolute;
+  right: 100%;
+  margin-right: 20px;
+  white-space: nowrap;
+}
+
+.current-player {
+  font-weight: 700 !important;
+  color: #1f7a4f !important;
+}
+
 .board {
   position: relative;
   display: grid;
