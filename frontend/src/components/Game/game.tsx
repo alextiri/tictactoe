@@ -37,16 +37,6 @@ export default function Game() {
     const [moveLoading, setMoveLoading] = useState(false);
     const navigate = useNavigate();
 
-    const storedUser = localStorage.getItem("user");
-    const user = storedUser ? JSON.parse(storedUser) : null;
-
-    const playerSymbol =
-        game?.playerXId === user?.id
-            ? "X"
-            : game?.playerOId === user?.id
-            ? "O"
-            : null;
-
     const handleCellClick = async (index: number) => {
         setErrorMessage('');
         if (!game || winner || moveLoading) return;
