@@ -34,17 +34,50 @@ export default function Game() {
     const [winningPattern, setWinningPattern] = useState<number[] | null>(null);
     const [isDraw, setIsDraw] = useState(false);
     const [errMessage, setErrorMessage] = useState('');
-    const [moveLoading, setMoveLoading] = useState(false);
     const navigate = useNavigate();
+
+    const storedUser = localStorage.getItem("user");
+    const user = storedUser ? JSON.parse(storedUser) : null;
+    const playerSymbol =
+    game?.playerXId === user?.id
+        ? "X"
+        : game?.playerOId === user?.id
+        ? "O"
+        : null;
 
     const handleCellClick = async (index: number) => {
         setErrorMessage('');
-        if (!game || winner || moveLoading) return;
+        if (!game || winner || game.board[index] !== '') {
+            return;
+        }
+
+        if (game.currentTurn !== playerSymbol) {
+            setErrorMessage("It's not your turn");
+            return;
+        }
         
         const token = localStorage.getItem("token");
         if (!token) return;
 
-        setMoveLoading(true);
+        const previousGame = game;
+        const optimisticGame = {
+            ...game,
+            board: [...game.board],
+            currentTurn: game.currentTurn === "X" ? "O" : "X",
+            moves: [
+                ...game.moves,
+                {
+                    moveNumber: game.moves.length + 1,
+                    playerId: user.id,
+                    symbol: game.currentTurn,
+                    square: index
+                }
+            ]
+        }
+
+        optimisticGame.board[index] = game.currentTurn;
+
+        setGame(optimisticGame);
 
         try {
             const res = await fetch(`${URLS.games}/${game.id}/move`, {
@@ -73,9 +106,8 @@ export default function Game() {
                 }
             }
         } catch (err: any) {
+            setGame(previousGame);
             setErrorMessage(err.message);
-        } finally {
-            setMoveLoading(false);
         }
     }
 

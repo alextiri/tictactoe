@@ -64,7 +64,7 @@
 .game-container button {
   position: relative;
   z-index: 2;
-  
+
   padding: 10px 18px;
   margin-top: 15px;
   border: none;
@@ -128,7 +128,7 @@
   position: absolute;
   left: 100%;
   margin-left: 20px;
-  width: 220px;
+  width: 240px;
   padding: 14px;
   background-color: #f5faf6;
   border: 1px solid #cfe7dc;
@@ -144,15 +144,22 @@
 .moves-header,
 .moves-list li {
   display: grid;
-  grid-template-columns: 35px 1fr 50px 50px;
+  grid-template-columns: 30px 1fr 55px 55px;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
 }
 
 .moves-header {
   font-weight: 700;
   border-bottom: 1px solid #cfe7dc;
   padding-bottom: 6px;
+}
+
+.moves-header span:nth-child(3),
+.moves-header span:nth-child(4),
+.moves-list li span:nth-child(3),
+.moves-list li span:nth-child(4) {
+  text-align: center;
 }
 
 .moves-list {
