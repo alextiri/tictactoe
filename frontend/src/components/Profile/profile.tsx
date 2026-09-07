@@ -333,7 +333,7 @@ export default function Profile() {
             }
 
             try {
-                const res = await fetch("http://localhost:8080/api/friends", {
+                const res = await fetch(`${URLS.friends}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -359,7 +359,7 @@ export default function Profile() {
             }
 
             try {
-                const res = await fetch("http://localhost:8080/api/friends/requests", {
+                const res = await fetch(`${URLS.friends}/requests`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
