@@ -29,12 +29,16 @@ public class UserService {
         }
         if (password.length() < 8) {
             throw new IllegalArgumentException(
-                    "Password must be at least 8 characters long"
+                "Password must be at least 8 characters long"
             );
         }
 
         if (userRepository.findByEmail(email).isPresent()) {
-            throw new IllegalArgumentException("User already exists");
+            throw new IllegalArgumentException("This email address is already in use");
+        }
+
+        if (userRepository.findByUsername(username).isPresent()) {
+            throw new IllegalArgumentException("Username already exists");
         }
 
         String hashedPassword = passwordEncoder.encode(password);
@@ -60,18 +64,6 @@ public class UserService {
                     "Invalid email or password"
                 )
             );
-
-        // Temporary
-        boolean matches = passwordEncoder.matches(password, user.getPassword());
-
-        System.out.println("Password matches: " + matches);
-
-        if (!matches) {
-            throw new IllegalArgumentException(
-                    "Invalid email or password"
-            );
-        }
-        // Temporary
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new IllegalArgumentException(

@@ -6,20 +6,31 @@ import * as Popover from "@radix-ui/react-popover";
 import { URLS } from "../../config/utils";
 import BubbleBackground from "../BubbleBackground";
 
+interface Friend {
+    userId: number;
+    username: string;
+    friendsSince: string;
+}
+
+interface FriendRequestResponse {
+    userId: number;
+    username: string;
+    createdAt: string;
+}
 
 interface Move {
-  moveNumber: number;
-  symbol: string;
-  square: number;
-  username: string;
+    moveNumber: number;
+    symbol: string;
+    square: number;
+    username: string;
 }
 
 interface GameHistoryEntry {
-  gameId: number;
-  gameCode: string;
-  winner: string | null;
-  createdAt: string;
-  moves: Move[];
+    gameId: number;
+    gameCode: string;
+    winner: string | null;
+    createdAt: string;
+    moves: Move[];
 }
 
 export default function Profile() {
@@ -28,6 +39,13 @@ export default function Profile() {
     const [error, setError] = useState('');
     const [joinCode, setJoinCode] = useState("");
     const [joinError, setJoinError] = useState<string | null>(null);
+
+    const [friends, setFriends] = useState<Friend[]>([]);
+    const [friendRequests, setFriendRequests] = useState<FriendRequestResponse[]>([]);
+    const [showFriendRequests, setShowFriendRequests] = useState(false);
+    const [showAddFriend, setShowAddFriend] = useState(false);
+    const [friendUsername, setFriendUsername] = useState("");
+    const [friendsLoading, setFriendsLoading] = useState(true);
 
     const [history, setHistory] = useState<GameHistoryEntry[]>([]);
     const [historyLoading, setHistoryLoading] = useState(true);
@@ -121,6 +139,166 @@ export default function Profile() {
         }
     };
 
+    const handleAddFriend = async () => {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            return;
+        }
+
+        try {
+            const userRes = await fetch(`http://localhost:8080/api/friends/user?username=${encodeURIComponent(friendUsername)}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (!userRes.ok) {
+                throw new Error("User not found");
+            }
+
+            const receiverId: number = await userRes.json();
+            const res = await fetch(`http://localhost:8080/api/friends/requests?receiverId=${receiverId}`,
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.message || "Failed to send friend request");
+            }
+
+            setFriendUsername("");
+            setShowAddFriend(false);
+        } catch (error: any) {
+            console.error(error);
+        }
+    };
+
+    const handleAcceptFriend = async (request: FriendRequestResponse) => {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            return;
+        }
+
+        try {
+            const res = await fetch(
+                `http://localhost:8080/api/friends/requests?receiverId=${request.userId}`,
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.message || "Failed to accept friend request");
+            }
+
+            setFriendRequests((requests) => {
+                const remainingRequests = requests.filter(
+                    (r) => r.userId !== request.userId
+                );
+
+                if (remainingRequests.length === 0) {
+                    setShowFriendRequests(false);
+                }
+
+                return remainingRequests;
+            });
+
+            setFriends((friends) => [
+                ...friends,
+                {
+                    userId: request.userId,
+                    username: request.username,
+                    friendsSince: new Date().toISOString()
+                }
+            ]);
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleDeclineFriend = async (request: FriendRequestResponse) => {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            return;
+        }
+
+        try {
+            const res = await fetch(
+                `http://localhost:8080/api/friends/requests?senderId=${request.userId}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.message || "Failed to decline friend request");
+            }
+
+            setFriendRequests((requests) => {
+                const remainingRequests = requests.filter(
+                    (r) => r.userId !== request.userId
+                );
+
+                if (remainingRequests.length === 0) {
+                    setShowFriendRequests(false);
+                }
+
+                return remainingRequests;
+            });
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleRemoveFriend = async (friend: Friend) => {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            return;
+        }
+
+        try {
+            const res = await fetch(
+                `http://localhost:8080/api/friends?friendId=${friend.userId}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.message || "Failed to remove friend");
+            }
+
+            setFriends((friends) =>
+                friends.filter((f) => f.userId !== friend.userId)
+            );
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
     useEffect(() => {
         const fetchHistory = async () => {
             const token = localStorage.getItem("token");
@@ -146,7 +324,61 @@ export default function Profile() {
                 setHistoryLoading(false);
             }
         };
+
+        const fetchFriends = async () => {
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                return;
+            }
+
+            try {
+                const res = await fetch("http://localhost:8080/api/friends", {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                if (!res.ok) {
+                    throw new Error("Failed to fetch friends");
+                }
+
+                const data: Friend[] = await res.json();
+                setFriends(data);
+                setFriendsLoading(false);
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
+        const fetchFriendRequests = async () => {
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                return;
+            }
+
+            try {
+                const res = await fetch("http://localhost:8080/api/friends/requests", {
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                });
+
+                if (!res.ok) {
+                    throw new Error("Failed to fetch friend requests");
+                }
+
+                const data: FriendRequestResponse[] = await res.json();
+                setFriendRequests(data);
+            } catch (error) {
+                console.error(error);
+            }
+        };
+
         fetchHistory();
+        fetchFriends();
+        fetchFriendRequests();
     }, [])
 
     const totalPages = Math.ceil(history.length / itemsPerPage);
@@ -156,114 +388,221 @@ export default function Profile() {
     return (
         <div className="profile">
             <BubbleBackground/>
-            <div className="profile-header">
-                <h1 className="profile-title">
-                    {user ? `Welcome back, ${user.username}` : "Welcome back"}
-                </h1>
+            <div className="friends-panel">
+                {showAddFriend ? (
+                    <div>
+                        <h2 className="friends-title">Add Friend</h2>
+                        <input
+                            type="text"
+                            placeholder="Username"
+                            value={friendUsername}
+                            onChange={(e) => setFriendUsername(e.target.value)}
+                        />
+                        <button className="add-friend-button" onClick={handleAddFriend}>
+                            Send Request
+                        </button>
+                        <button className="back-to-friends-button" onClick={() => setShowAddFriend(false)}>
+                            Back
+                        </button>
+                    </div>
+                ) : (
+                    showFriendRequests ? (
+                    <>
+                        <h2 className="friends-title">Pending Requests</h2>
+                        <ul className="friends-list">
+                            {friendRequests.map((request) => (
+                                <li key={request.userId}>
+                                    <span>{request.username}</span>
+                                    <div className="friend-request-actions">
+                                        <button onClick={() => handleAcceptFriend(request)}>
+                                            Accept
+                                        </button>
+                                        <button onClick={() => handleDeclineFriend(request)}>
+                                            Decline
+                                        </button>
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                        <button className="back-to-friends-button" onClick={() => setShowFriendRequests(false)}>
+                            Back
+                        </button>
+                    </> 
+                    ) : (
+                    <>
+                        <h2 className="friends-title">Friends</h2>
+                        {friendsLoading ? (
+                            <p className="loading-friends">Loading your friend list...</p>
+                        ) : friends.length === 0 ? (
+                            <p className="no-friends">No friends yet</p>
+                        ) : (
+                            <ul className="friends-list">
+                                {friends.map((friend) => (
+                                    <li key={friend.userId}>
+                                        {friend.username}
+                                        <button onClick={() => handleRemoveFriend(friend)}>
+                                            Remove
+                                        </button>
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                        {friendRequests.length > 0 && (
+                            <button className="friend-requests-button" onClick={() => setShowFriendRequests(true)}>
+                                {friendRequests.length} pending friend request
+                                {friendRequests.length !== 1 ? "s" : ""}
+                            </button>
+                        )}
+
+                        <button className="add-friend-button" onClick={() => setShowAddFriend(true)}>
+                            Add Friend
+                        </button>
+                    </>
+                ))}
             </div>
-            <h2 className="history-title">Game History</h2>
-            {historyLoading ? (
-                <p className="no-games">Loading your game history...</p>
-            ) : currentGames.length === 0 ? (
-                <p className="no-games">No games played yet</p>
-            ) : (
-                <table className="history-table">
-                    <thead>
-                        <tr>
-                            <th>Game Code</th>
-                            <th>Winner</th>
-                            <th>Started At</th>
-                            <th>Moves</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {currentGames.map((game) => (
-                            <tr key={game.gameId}>
-                                <td>{game.gameCode}</td>
-                                <td>
-                                    {game.winner
-                                        ? game.winner
-                                        : game.moves.length === 9
-                                        ? "Draw"
-                                        : "Pending"}
-                                </td>
-                                <td>{new Date(game.createdAt).toLocaleString()}</td>
-                                <td>
-                                    <Popover.Root>
-                                        <Popover.Trigger asChild>
-                                            <button className="profile-moves-btn">Moves</button>
-                                        </Popover.Trigger>
-                                        <Popover.Portal>
-                                            <Popover.Content className="profile-popover" side="right" align="start" sideOffset={8}>
-                                                <div className="profile-popover-header">
-                                                    <strong>Game {game.gameCode}</strong>
-                                                </div>
-                                                <div className="profile-moves-header">
-                                                    <span className="mh-num">#</span>
-                                                    <span className="mh-user">User</span>
-                                                    <span className="mh-symbol">Symbol</span>
-                                                    <span className="mh-square">Square</span>
-                                                </div>
-                                                <div className="profile-popover-body">
-                                                    {game.moves.length === 0 ? (
-                                                        <p>No moves yet</p>
-                                                    ) : (
-                                                        <ul className="profile-moves-list">
-                                                            {game.moves.map((move) => (
-                                                                <li key={`${game.gameId}-${move.moveNumber}-${move.square}`}>
-                                                                    <span className="move-num">#{move.moveNumber}</span>
-                                                                    <span className="move-user">{move.username}</span>
-                                                                    <span className="move-symbol">{move.symbol}</span>
-                                                                    <span className="move-square">{move.square+1}</span>
-                                                                </li>
-                                                            ))}
-                                                        </ul>
-                                                    )}
-                                                </div>
-                                                <Popover.Arrow className="profile-popover-arrow"/>
-                                            </Popover.Content>
-                                        </Popover.Portal>
-                                    </Popover.Root>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            )}
-            {totalPages > 1 && (
-                <div className="pagination" style={{ marginTop: "10px" }}>
-                <button
-                    onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
-                    disabled={currentPage === 1}
-                >
-                    Previous
-                </button>
-                <span style={{ margin: "0 10px" }}>Page {currentPage} of {totalPages}</span>
-                <button
-                    onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
-                    disabled={currentPage === totalPages}
-                >
-                    Next
-                </button>
+            <div className="profile-center">
+                <div className="profile-header">
+                    <h1 className="profile-title">
+                        {user ? `Welcome back, ${user.username}` : "Welcome back"}
+                    </h1>
                 </div>
-            )}
-            <div className="game-actions">
-                <div className="join-game">
-                    <button onClick={handleNewGame}>
-                        {loading ? "Creating..." : "New game"}
-                    </button>
-                    <input
-                        type="text"
-                        placeholder="Enter game code"
-                        value={joinCode}
-                        onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-                    />
-                    <button onClick={handleJoinGame}>Join Game</button>
+                <h2 className="history-title">Game History</h2>
+                <div className="history-content">
+                    {historyLoading ? (
+                        <p className="no-games">Loading your game history...</p>
+                    ) : currentGames.length === 0 ? (
+                        <p className="no-games">No games played yet</p>
+                    ) : (
+                        <table className="history-table">
+                            <thead>
+                                <tr>
+                                    <th>Game Code</th>
+                                    <th>Winner</th>
+                                    <th>Started At</th>
+                                    <th>Moves</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {Array.from({ length: 5 }, (_, index) => {
+                                    const game = currentGames[index];
+                                    return game ? (
+                                        <tr key={game.gameId}>
+                                            <td>{game.gameCode}</td>
+                                            <td>
+                                                {game.winner
+                                                    ? game.winner
+                                                    : game.moves.length === 9
+                                                    ? "Draw"
+                                                    : "Pending"}
+                                            </td>
+                                            <td>{new Date(game.createdAt).toLocaleString()}</td>
+                                            <td>
+                                                <Popover.Root>
+                                                    <Popover.Trigger asChild>
+                                                        <button className="profile-moves-btn">Moves</button>
+                                                    </Popover.Trigger>
+                                                    <Popover.Portal>
+                                                        <Popover.Content
+                                                            className="profile-popover"
+                                                            side="right"
+                                                            align="start"
+                                                            sideOffset={8}
+                                                        >
+                                                            <div className="profile-popover-header">
+                                                                <strong>Game {game.gameCode}</strong>
+                                                            </div>
+
+                                                            <div className="profile-moves-header">
+                                                                <span className="mh-num">#</span>
+                                                                <span className="mh-user">User</span>
+                                                                <span className="mh-symbol">Symbol</span>
+                                                                <span className="mh-square">Square</span>
+                                                            </div>
+
+                                                            <div className="profile-popover-body">
+                                                                {game.moves.length === 0 ? (
+                                                                    <p>No moves yet</p>
+                                                                ) : (
+                                                                    <ul className="profile-moves-list">
+                                                                        {game.moves.map((move) => (
+                                                                            <li
+                                                                                key={`${game.gameId}-${move.moveNumber}-${move.square}`}
+                                                                            >
+                                                                                <span className="move-num">
+                                                                                    #{move.moveNumber}
+                                                                                </span>
+                                                                                <span className="move-user">
+                                                                                    {move.username}
+                                                                                </span>
+                                                                                <span className="move-symbol">
+                                                                                    {move.symbol}
+                                                                                </span>
+                                                                                <span className="move-square">
+                                                                                    {move.square + 1}
+                                                                                </span>
+                                                                            </li>
+                                                                        ))}
+                                                                    </ul>
+                                                                )}
+                                                            </div>
+                                                            <Popover.Arrow className="profile-popover-arrow" />
+                                                        </Popover.Content>
+                                                    </Popover.Portal>
+                                                </Popover.Root>
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        <tr key={`empty-${index}`}>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                            <td></td>
+                                        </tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    )}
                 </div>
-                {joinError && (
-                    <p className="join-error">{joinError}</p>
-                )}
-                <button onClick={handleLogout}>Logout</button>
+                <div className="pagination-slot">
+                    {totalPages > 1 && (
+                        <div className="pagination">
+                            <button
+                                onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))}
+                                disabled={currentPage === 1}
+                            >
+                                Previous
+                            </button>
+                            <span>
+                                Page {currentPage} of {totalPages}
+                            </span>
+                            <button
+                                onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))}
+                                disabled={currentPage === totalPages}
+                            >
+                                Next
+                            </button>
+                        </div>
+                    )}
+                </div>
+                <div className="game-actions">
+                    <div className="join-game">
+                        <button onClick={handleNewGame}>
+                            {loading ? "Creating..." : "New game"}
+                        </button>
+                        <input
+                            type="text"
+                            placeholder="Enter game code"
+                            value={joinCode}
+                            onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+                        />
+                        <button onClick={handleJoinGame}>Join Game</button>
+                    </div>
+                    {joinError && (
+                        <p className="join-error">{joinError}</p>
+                    )}
+                    <button onClick={handleLogout}>Logout</button>
+                </div>
             </div>
         </div>
     )
