@@ -97,7 +97,6 @@ public class GameService {
         game.setPlayerXId(userId);
         game.setPlayerOId(null);
         game.setBoard(new ArrayList<>(Collections.nCopies(9, "")));
-        game.setCurrentTurn("X");
         game.setWinner(null);
         game.setStatus("ongoing");
 
@@ -162,8 +161,14 @@ public class GameService {
             throw new IllegalArgumentException("You are not a player in this game");
         }
 
-        if (!game.getCurrentTurn().equals(symbol)) {
-            throw new IllegalArgumentException("It is not your turn");
+        String expectedSymbol = moves.isEmpty()
+            ? "X"
+            : moves.get(moves.size() - 1).getSymbol().equals("X")
+                ? "O"
+                : "X";
+
+        if (!expectedSymbol.equals(symbol)) {
+            throw new IllegalArgumentException("Not your turn");
         }
 
         GameMove move = new GameMove();
@@ -217,8 +222,6 @@ public class GameService {
         } else if (!board.contains("")) {
             game.setWinner(null);
             game.setStatus("finished");
-        } else {
-            game.setCurrentTurn("X".equals(symbol) ? "O" : "X");
         }
 
         Game savedGame = gameRepository.save(game);
@@ -242,7 +245,7 @@ public class GameService {
         game.setMoves(
             gameMoveRepository.findByGameIdOrderByMoveNumberAsc(game.getId())
         );
-        
+
         return game;
     }
 }

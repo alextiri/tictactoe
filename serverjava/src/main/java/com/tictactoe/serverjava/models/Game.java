@@ -39,9 +39,6 @@ public class Game {
     @Column(nullable = false, columnDefinition = "json")
     private List<String> board;
 
-    @Column(name = "current_turn", nullable = false, length = 1)
-    private String currentTurn;
-
     @Column(length = 1)
     private String winner;
 
@@ -112,14 +109,6 @@ public class Game {
 
     public void setBoard(List<String> board) {
         this.board = board;
-    }
-
-    public String getCurrentTurn() {
-        return currentTurn;
-    }
-
-    public void setCurrentTurn(String currentTurn) {
-        this.currentTurn = currentTurn;
     }
 
     public String getWinner() {

@@ -13,7 +13,6 @@ interface Game {
     playerOUsername: string | null;
     moves: Move[];
     gameCode: string;
-    currentTurn: string;
     board: string[];
     status: "ongoing" | "finished";
     winner: string | null;
@@ -36,6 +35,14 @@ export default function Game() {
     const [errMessage, setErrorMessage] = useState('');
     const navigate = useNavigate();
 
+    const currentTurn = game
+        ? game.moves.length === 0
+            ? "X"
+            : game.moves[game.moves.length - 1].symbol === "X"
+                ? "O"
+                : "X"
+        : "X";
+
     const storedUser = localStorage.getItem("user");
     const user = storedUser ? JSON.parse(storedUser) : null;
     const playerSymbol =
@@ -51,7 +58,7 @@ export default function Game() {
             return;
         }
 
-        if (game.currentTurn !== playerSymbol) {
+        if (currentTurn !== playerSymbol) {
             setErrorMessage("It's not your turn");
             return;
         }
@@ -63,19 +70,18 @@ export default function Game() {
         const optimisticGame = {
             ...game,
             board: [...game.board],
-            currentTurn: game.currentTurn === "X" ? "O" : "X",
             moves: [
                 ...game.moves,
                 {
                     moveNumber: game.moves.length + 1,
                     playerId: user.id,
-                    symbol: game.currentTurn,
+                    symbol: currentTurn,
                     square: index
                 }
             ]
         }
 
-        optimisticGame.board[index] = game.currentTurn;
+        optimisticGame.board[index] = currentTurn;
 
         setGame(optimisticGame);
 
@@ -207,11 +213,11 @@ export default function Game() {
 
                         <div className="game-area">
                             <div className="players">
-                                <p className={game.currentTurn === "X" ? "current-player" : ""}>
+                                <p className={currentTurn === "X" ? "current-player" : ""}>
                                     X: {game.playerXUsername}
                                 </p>
 
-                                <p className={game.currentTurn === "O" ? "current-player" : ""}>
+                                <p className={currentTurn === "O" ? "current-player" : ""}>
                                     O: {game.playerOUsername ?? "Waiting for player..."}
                                 </p>
                             </div>
