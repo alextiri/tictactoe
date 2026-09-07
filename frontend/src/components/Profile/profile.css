@@ -352,6 +352,27 @@
   z-index: 2;
 }
 
+.profile .friends-panel input {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  border: 1px solid #cfe7dc;
+  border-radius: 8px;
+  background-color: #fff;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.profile .friends-panel input:focus {
+  border-color: #4caf7f;
+  box-shadow: 0 0 0 2px rgba(76, 175, 127, 0.15);
+}
+
 .profile .friends-title {
   text-align: center;
 }
@@ -396,19 +417,13 @@
   font-size: 0.8rem;
 }
 
-.profile .friends-panel .back-to-friends-button {
-  position: absolute;
-  bottom: 20px;
-  left: 20px;
-}
-
 .profile .friend-requests-button {
   position: absolute;
   bottom: 55px;
   left: 20px;
 }
 
-.profile .add-friend-button {
+.profile .friends-panel > .add-friend-button {
   position: absolute;
   bottom: 15px;
   left: 20px;
@@ -422,6 +437,19 @@
   transform: translate(-50%, -50%);
   margin: 0;
   text-align: center;
+}
+
+.profile .add-friend-actions {
+  position: absolute;
+  bottom: 15px;
+  left: 20px;
+  right: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.profile .add-friend-actions button {
+  margin: 0;
 }
 
 

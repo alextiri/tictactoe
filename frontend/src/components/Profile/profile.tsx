@@ -398,12 +398,14 @@ export default function Profile() {
                             value={friendUsername}
                             onChange={(e) => setFriendUsername(e.target.value)}
                         />
-                        <button className="add-friend-button" onClick={handleAddFriend}>
-                            Send Request
-                        </button>
-                        <button className="back-to-friends-button" onClick={() => setShowAddFriend(false)}>
-                            Back
-                        </button>
+                        <div className="add-friend-actions">
+                            <button className="add-friend-button" onClick={handleAddFriend}>
+                                Send Request
+                            </button>
+                            <button className="back-to-friends-button" onClick={() => setShowAddFriend(false)}>
+                                Back
+                            </button>
+                        </div>
                     </div>
                 ) : (
                     showFriendRequests ? (
