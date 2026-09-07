@@ -224,6 +224,8 @@
 }
 
 .loading-card {
+  position: relative;
+  z-index: 2;
   background-color: #f5faf6;
   border: 1px solid #cfe7dc;
   border-radius: 14px;
