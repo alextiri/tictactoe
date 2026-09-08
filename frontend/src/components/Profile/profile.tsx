@@ -37,7 +37,6 @@ interface GameHistoryEntry {
 export default function Profile() {
     const navigate = useNavigate();
     const [joinCode, setJoinCode] = useState("");
-    const [joinError, setJoinError] = useState<string | null>(null);
 
     const [showFriendRequests, setShowFriendRequests] = useState(false);
     const [showAddFriend, setShowAddFriend] = useState(false);
@@ -326,13 +325,13 @@ export default function Profile() {
 
     const handleJoinGame = () => {
         if (!joinCode) {
-            setJoinError("Please enter a game code");
+            joinGameMutation.reset();
             setJoinCode("");
             return;
         }
 
         if (joinCode.length !== 6) {
-            setJoinError("Please enter a valid, 6-digit game code");
+            joinGameMutation.reset();
             setJoinCode("");
             return;
         }
@@ -575,8 +574,8 @@ export default function Profile() {
                         />
                         <button onClick={handleJoinGame}>Join Game</button>
                     </div>
-                    {joinError && (
-                        <p className="join-error">{joinError}</p>
+                    {joinGameMutation.error && (
+                        <p className="join-error">{joinGameMutation.error.message}</p>
                     )}
                     <button onClick={handleLogout}>Logout</button>
                 </div>

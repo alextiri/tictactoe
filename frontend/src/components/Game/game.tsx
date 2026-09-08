@@ -1,5 +1,6 @@
 import { useParams } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import './game.css'
 import { URLS } from "../../config/utils";
@@ -26,15 +27,112 @@ interface Move {
     square: number;
 }
 
+interface MoveVariables {
+    gameId: number;
+    index: number;
+    symbol: string;
+}
+
 export default function Game() {
     const { id } = useParams<{ id: string }>();
-    const [game, setGame] = useState<Game | null>(null);
-    const [winner, setWinner] = useState<string | null>(null);
-    const [winningPattern, setWinningPattern] = useState<number[] | null>(null);
-    const [isDraw, setIsDraw] = useState(false);
     const [errMessage, setErrorMessage] = useState('');
     const navigate = useNavigate();
 
+    const queryClient = useQueryClient();
+
+    const fetchGame = async (): Promise<Game> => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            throw new Error("You must be logged in");
+        }
+
+        const res = await fetch(`${URLS.games}/${id}`, {
+            headers: {
+                Authorization: `Bearer ${token}`,
+            },
+        });
+
+        if (!res.ok) {
+            throw new Error("Failed to load game");
+        }
+
+        const data = await res.json();
+        return data.game;
+    };
+
+    const gameQuery = useQuery({
+        queryKey: ["game", id],
+        queryFn: fetchGame,
+    });
+
+    const moveMutation = useMutation({
+        mutationFn: async ({ gameId, index }: MoveVariables) => {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                throw new Error("You must be logged in");
+            }
+
+            const res = await fetch(`${URLS.games}/${gameId}/move`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({
+                    square: index,
+                }),
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.message || "Failed to make move");
+            }
+
+            const data = await res.json();
+            return data.game as Game;
+        },
+        onMutate: async ({ index, symbol }: MoveVariables) => {
+            await queryClient.cancelQueries({ queryKey: ["game", id] });
+            const previousGame = queryClient.getQueryData<Game>(["game", id]);
+
+            if (!previousGame) {
+                return { previousGame: undefined };
+            }
+
+            const optimisticGame = {
+                ...previousGame,
+                board: [...previousGame.board],
+                moves: [
+                    ...previousGame.moves,
+                    {
+                        moveNumber: previousGame.moves.length + 1,
+                        playerId: user.id,
+                        symbol,
+                        square: index
+                    }
+                ]
+            };
+
+            optimisticGame.board[index] = symbol;
+            queryClient.setQueryData(["game", id], optimisticGame);
+            return { previousGame };
+        },
+        onSuccess: (updatedGame) => {
+            queryClient.setQueryData(["game", id], updatedGame);
+        },
+        onError: (error, _variables, context) => {
+            if (context?.previousGame) {
+                queryClient.setQueryData(["game", id], context.previousGame);
+            }
+
+            setErrorMessage(error.message);
+        },
+    });
+
+    const game = gameQuery.data ?? null;
+    const winner = game?.winner ?? null;
+    const winningPattern = game?.winningPattern ?? null;
+    const isDraw = game?.status === "finished" && !game.winner;
     const currentTurn = game
         ? game.moves.length === 0
             ? "X"
@@ -45,110 +143,19 @@ export default function Game() {
 
     const storedUser = localStorage.getItem("user");
     const user = storedUser ? JSON.parse(storedUser) : null;
-    const playerSymbol =
-    game?.playerXId === user?.id
-        ? "X"
-        : game?.playerOId === user?.id
-        ? "O"
-        : null;
-
-    const handleCellClick = async (index: number) => {
+    
+    const handleCellClick = (index: number) => {
         setErrorMessage('');
-        if (!game || winner || game.board[index] !== '') {
+        if (!game || game.board[index] || game.status === "finished") {
             return;
         }
 
-        if (currentTurn !== playerSymbol) {
-            setErrorMessage("It's not your turn");
-            return;
-        }
-        
-        const token = localStorage.getItem("token");
-        if (!token) return;
-
-        const previousGame = game;
-        const optimisticGame = {
-            ...game,
-            board: [...game.board],
-            moves: [
-                ...game.moves,
-                {
-                    moveNumber: game.moves.length + 1,
-                    playerId: user.id,
-                    symbol: currentTurn,
-                    square: index
-                }
-            ]
-        }
-
-        optimisticGame.board[index] = currentTurn;
-
-        setGame(optimisticGame);
-
-        try {
-            const res = await fetch(`${URLS.games}/${game.id}/move`, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${token}`,
-                },
-                body: JSON.stringify({ square: index })
-            });
-
-            if (!res.ok) {
-                const data = await res.json();
-                throw new Error(data.message || "Failed to make a move");
-            }
-
-            const data = await res.json();
-            setGame(data.game);
-
-            if (data.game.status === "finished") {
-                if (data.game.winner) {
-                    setWinner(data.game.winner);
-                    setWinningPattern(data.game.winningPattern);
-                } else {
-                    setIsDraw(true);
-                }
-            }
-        } catch (err: any) {
-            setGame(previousGame);
-            setErrorMessage(err.message);
-        }
-    }
-
-    useEffect(() => {
-        const fetchGame = async () => {
-            try {
-                const token = localStorage.getItem("token");
-                if (!token) return;
-                
-                const res = await fetch(`${URLS.games}/${id}`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                    },
-                });
-
-                if (!res.ok) throw new Error("Failed to load game");
-
-                const data = await res.json();
-                setGame(data.game);
-
-                if (data.game.status === "finished") {
-                    if (data.game.winner) {
-                        setWinner(data.game.winner);
-                        setWinningPattern(data.game.winningPattern);
-                    } else {
-                        setIsDraw(true);
-                    }
-                }
-            } catch (err: any) {
-                console.log(err);
-            }
-        };
-
-        fetchGame();
-    }, [id])
+        moveMutation.mutate({
+            gameId: game.id,
+            index,
+            symbol: currentTurn
+        });
+    };
 
     useEffect(() => {
         const token = localStorage.getItem("token");
@@ -160,16 +167,7 @@ export default function Game() {
 
         socket.onmessage = (event) => {
             const updatedGame = JSON.parse(event.data);
-            setGame(updatedGame);
-
-            if (updatedGame.status === "finished") {
-                if (updatedGame.winner) {
-                    setWinner(updatedGame.winner);
-                    setWinningPattern(updatedGame.winningPattern);
-                } else {
-                    setIsDraw(true);
-                }
-            }
+            queryClient.setQueryData(["game", id], updatedGame);
         };
 
         socket.onopen = () => {
