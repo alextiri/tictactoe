@@ -237,38 +237,35 @@ export default function Game() {
                             </div>
 
                             <div className="moves">
-                                <h3>Moves</h3>
-
-                                <div className="moves-header">
-                                    <span>#</span>
-                                    <span>User</span>
-                                    <span>Symbol</span>
-                                    <span>Square</span>
-                                </div>
-
-                                <div className="moves-body">
-                                    {game.moves.length === 0 ? (
-                                        <p>No moves yet</p>
-                                    ) : (
-                                        <ul className="moves-list">
-                                            {game.moves.map((move) => (
-                                                <li key={move.moveNumber}>
-                                                    <span>#{move.moveNumber}</span>
-
-                                                    <span>
-                                                        {move.symbol === "X"
-                                                            ? game.playerXUsername
-                                                            : game.playerOUsername}
-                                                    </span>
-
-                                                    <span>{move.symbol}</span>
-
-                                                    <span>{move.square + 1}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    )}
-                                </div>
+                                {game.moves.length === 0 ? (
+                                    <p className="no-moves">No moves yet</p>
+                                ) : (
+                                    <>
+                                        <h3>Moves</h3>
+                                        <div className="moves-header">
+                                            <span>#</span>
+                                            <span>User</span>
+                                            <span>Symbol</span>
+                                            <span>Square</span>
+                                        </div>
+                                        <div className="moves-body">
+                                            <ul className="moves-list">
+                                                {game.moves.map((move) => (
+                                                    <li key={move.moveNumber}>
+                                                        <span>#{move.moveNumber}</span>
+                                                        <span>
+                                                            {move.symbol === "X"
+                                                                ? game.playerXUsername
+                                                                : game.playerOUsername}
+                                                        </span>
+                                                        <span>{move.symbol}</span>
+                                                        <span>{move.square + 1}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
 

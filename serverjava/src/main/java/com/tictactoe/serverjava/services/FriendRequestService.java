@@ -84,7 +84,12 @@ public class FriendRequestService {
     }
 
     @Transactional
-    public void sendRequest(Integer senderId, Integer receiverId) {
+    public void sendRequest(Integer senderId, String receiverUsername) {
+        User receiver = userRepository.findByUsername(receiverUsername)
+            .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
+        Integer receiverId = receiver.getId();
+
         if (senderId.equals(receiverId)) {
             throw new IllegalArgumentException("You cannot add yourself as a friend");
         }

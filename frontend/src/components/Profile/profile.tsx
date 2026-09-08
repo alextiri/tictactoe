@@ -1,9 +1,10 @@
 import { useNavigate } from "react-router-dom"
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import './profile.css'
 import "@radix-ui/themes/styles.css";
 import * as Popover from "@radix-ui/react-popover";
 import { URLS } from "../../config/utils";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import BubbleBackground from "../BubbleBackground";
 
 interface Friend {
@@ -35,20 +36,13 @@ interface GameHistoryEntry {
 
 export default function Profile() {
     const navigate = useNavigate();
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
     const [joinCode, setJoinCode] = useState("");
     const [joinError, setJoinError] = useState<string | null>(null);
 
-    const [friends, setFriends] = useState<Friend[]>([]);
-    const [friendRequests, setFriendRequests] = useState<FriendRequestResponse[]>([]);
     const [showFriendRequests, setShowFriendRequests] = useState(false);
     const [showAddFriend, setShowAddFriend] = useState(false);
     const [friendUsername, setFriendUsername] = useState("");
-    const [friendsLoading, setFriendsLoading] = useState(true);
 
-    const [history, setHistory] = useState<GameHistoryEntry[]>([]);
-    const [historyLoading, setHistoryLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
 
@@ -58,109 +52,156 @@ export default function Profile() {
     const handleLogout = () => {
         localStorage.removeItem('token');
         localStorage.removeItem('user');
+        queryClient.clear();
         navigate('/');
     }
-    
-    const handleNewGame = async () => {
-        setLoading(true);
-        setError('');
 
-        const token = localStorage.getItem('token');
-        if(!token) {
-            setError('You must be logged in to create a game');
-            setLoading(false);
+    const fetchFriends = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
             return;
         }
 
-        try {
+        const res = await fetch(`${URLS.friends}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (!res.ok) {
+            throw new Error("Failed to fetch friends");
+        }
+
+        const data: Friend[] = await res.json();
+        return data;
+    };
+
+    const fetchFriendRequests = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            return [];
+        }
+
+        const res = await fetch(`${URLS.friends}/requests`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (!res.ok) {
+            throw new Error("Failed to fetch friend requests");
+        }
+
+        const data: FriendRequestResponse[] = await res.json();
+        return data;
+    };
+
+    const fetchHistory = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            throw new Error("You must be logged in");
+        }
+
+        const res = await fetch(`${URLS.games}/history`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (!res.ok) {
+            throw new Error("Failed to fetch game history");
+        }
+
+        interface HistoryResponse {
+            history: GameHistoryEntry[];
+        }
+
+        const data: HistoryResponse = await res.json();
+        return data.history;
+    };
+
+    const queryClient = useQueryClient();
+
+    const friendsQuery = useQuery({
+        queryKey: ["friends", user?.id],
+        queryFn: fetchFriends
+    });
+
+    const friendRequestsQuery = useQuery({
+        queryKey: ["friendRequests", user?.id],
+        queryFn: fetchFriendRequests
+    });
+
+    const historyQuery = useQuery({
+        queryKey: ["gameHistory", user?.id],
+        queryFn: fetchHistory
+    });
+
+    const newGameMutation = useMutation({
+        mutationFn: async () => {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                throw new Error("You must be logged in to create a game");
+            }
+
             const res = await fetch(URLS.games, {
-                method: 'POST',
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
                 },
             });
 
-            if(!res.ok) {
+            if (!res.ok) {
                 const data = await res.json();
                 throw new Error(data.message || "Failed to create game");
             }
 
-            const data = await res.json();
-            console.log("New game created:", data.game);
+            return await res.json();
+        },
+        onSuccess: (data) => {
+            navigate(`/game/${data.game.id}`);
+        },
+    });
 
-            navigate(`/game/${data.game.id}`)
-        } catch (err: any) {
-            setError(err.message);
-            console.log(error);
-        } finally {
-            setLoading(false);
-        }
-    }
+    const joinGameMutation = useMutation({
+        mutationFn: async (gameCode: string) => {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                throw new Error("You must be logged in");
+            }
 
-    const handleJoinGame = async () => {
-        if(!joinCode) {
-            setJoinError("Please enter a game code");
-            setJoinCode("");
-            return;
-        }
-        if(joinCode.length !== 6) {
-            setJoinError("Please enter a valid, 6-digit game code");
-            setJoinCode("");
-            return;
-        }
-
-        const token = localStorage.getItem("token");
-        if(!token) {
-            setJoinError("You must be logged in");
-            return;
-        }
-
-        try {
-            setJoinError(null);
             const res = await fetch(`${URLS.games}/join`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    Authorization: `Bearer ${token}`
+                    Authorization: `Bearer ${token}`,
                 },
-                body: JSON.stringify({ gameCode: joinCode })
+                body: JSON.stringify({ gameCode }),
             });
 
             const data = await res.json();
-            if(!res.ok) {
+
+            if (!res.ok) {
                 throw new Error(data.message || "Failed to join game");
             }
-            console.log("Joined game", data.game);
-            navigate(`/game/${data.game.id}`)
-        } catch(err: any) {
-            setJoinError(err.message || "Could not join game");
-            setJoinCode("");
-        }
-    };
 
-    const handleAddFriend = async () => {
-        const token = localStorage.getItem("token");
+            return data;
+        },
+        onSuccess: (data) => {
+            navigate(`/game/${data.game.id}`);
+        },
+    });
 
-        if (!token) {
-            return;
-        }
-
-        try {
-            const userRes = await fetch(`${URLS.friends}/user?username=${encodeURIComponent(friendUsername)}`,
-                {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
-            );
-
-            if (!userRes.ok) {
-                throw new Error("User not found");
+    const addFriendMutation = useMutation({
+        mutationFn: async (username: string) => {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                throw new Error("You must be logged in");
             }
 
-            const receiverId: number = await userRes.json();
-            const res = await fetch(`${URLS.friends}/requests?receiverId=${receiverId}`,
+            const res = await fetch(
+                `${URLS.friends}/requests?username=${encodeURIComponent(username)}`,
                 {
                     method: "POST",
                     headers: {
@@ -171,26 +212,26 @@ export default function Profile() {
 
             if (!res.ok) {
                 const data = await res.json();
-                throw new Error(data.message || "Failed to send friend request");
+                throw new Error(
+                    data.message || "Failed to send friend request"
+                );
             }
-
+        },
+        onSuccess: () => {
             setFriendUsername("");
             setShowAddFriend(false);
-        } catch (error: any) {
-            console.error(error);
         }
-    };
+    });
 
-    const handleAcceptFriend = async (request: FriendRequestResponse) => {
-        const token = localStorage.getItem("token");
+    const acceptFriendMutation = useMutation({
+        mutationFn: async (username: string) => {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                throw new Error("You must be logged in");
+            }
 
-        if (!token) {
-            return;
-        }
-
-        try {
             const res = await fetch(
-                `${URLS.friends}/requests?receiverId=${request.userId}`,
+                `${URLS.friends}/requests?username=${encodeURIComponent(username)}`,
                 {
                     method: "POST",
                     headers: {
@@ -201,84 +242,34 @@ export default function Profile() {
 
             if (!res.ok) {
                 const data = await res.json();
-                throw new Error(data.message || "Failed to accept friend request");
-            }
-
-            setFriendRequests((requests) => {
-                const remainingRequests = requests.filter(
-                    (r) => r.userId !== request.userId
+                throw new Error(
+                    data.message || "Failed to accept friend request"
                 );
-
-                if (remainingRequests.length === 0) {
-                    setShowFriendRequests(false);
-                }
-
-                return remainingRequests;
+            }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["friends"]
             });
 
-            setFriends((friends) => [
-                ...friends,
-                {
-                    userId: request.userId,
-                    username: request.username,
-                    friendsSince: new Date().toISOString()
-                }
-            ]);
-        } catch (error) {
-            console.error(error);
+            queryClient.invalidateQueries({
+                queryKey: ["friendRequests"]
+            });
+
+            if (friendRequestsQuery.data?.length === 1) {
+                setShowFriendRequests(false);
+            }
         }
-    };
+    });
 
-    const handleDeclineFriend = async (request: FriendRequestResponse) => {
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-            return;
-        }
-
-        try {
-            const res = await fetch(
-                `${URLS.friends}/requests?senderId=${request.userId}`,
-                {
-                    method: "DELETE",
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
-            );
-
-            if (!res.ok) {
-                const data = await res.json();
-                throw new Error(data.message || "Failed to decline friend request");
+    const removeFriendMutation = useMutation({
+        mutationFn: async (friendId: number) => {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                throw new Error("You must be logged in");
             }
 
-            setFriendRequests((requests) => {
-                const remainingRequests = requests.filter(
-                    (r) => r.userId !== request.userId
-                );
-
-                if (remainingRequests.length === 0) {
-                    setShowFriendRequests(false);
-                }
-
-                return remainingRequests;
-            });
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    const handleRemoveFriend = async (friend: Friend) => {
-        const token = localStorage.getItem("token");
-
-        if (!token) {
-            return;
-        }
-
-        try {
-            const res = await fetch(
-                `${URLS.friends}?friendId=${friend.userId}`,
-                {
+            const res = await fetch(`${URLS.friends}?friendId=${friendId}`, {
                     method: "DELETE",
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -290,100 +281,84 @@ export default function Profile() {
                 const data = await res.json();
                 throw new Error(data.message || "Failed to remove friend");
             }
-
-            setFriends((friends) =>
-                friends.filter((f) => f.userId !== friend.userId)
-            );
-        } catch (error) {
-            console.error(error);
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["friends"]
+            });
         }
+    });
+
+    const declineFriendMutation = useMutation({
+        mutationFn: async (senderId: number) => {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                throw new Error("You must be logged in");
+            }
+
+            const res = await fetch(
+                `${URLS.friends}/requests?senderId=${senderId}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(
+                    data.message || "Failed to decline friend request"
+                );
+            }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["friendRequests"]
+            });
+        }
+    });
+
+    const handleNewGame = () => {
+        newGameMutation.mutate();
     };
 
-    useEffect(() => {
-        const fetchHistory = async () => {
-            const token = localStorage.getItem("token");
-            if(!token) {
-                setHistoryLoading(false);
-                return;
-            }
+    const handleJoinGame = () => {
+        if (!joinCode) {
+            setJoinError("Please enter a game code");
+            setJoinCode("");
+            return;
+        }
 
-            try {
-                const res = await fetch(`${URLS.games}/history`, {
-                    headers: { Authorization: `Bearer ${token}`}
-                });
-                if(!res.ok) throw new Error("Failed to fetch game history");
-                interface HistoryResponse {
-                    history: GameHistoryEntry[];
-                }
+        if (joinCode.length !== 6) {
+            setJoinError("Please enter a valid, 6-digit game code");
+            setJoinCode("");
+            return;
+        }
 
-                const data: HistoryResponse = await res.json();
-                setHistory(data.history);
-            } catch(error) {
-                console.error(error);
-            } finally {
-                setHistoryLoading(false);
-            }
-        };
+        joinGameMutation.mutate(joinCode);
+    };
 
-        const fetchFriends = async () => {
-            const token = localStorage.getItem("token");
+    const handleAddFriend = () => {
+        addFriendMutation.mutate(friendUsername);
+    };
 
-            if (!token) {
-                return;
-            }
+    const handleAcceptFriend = async (request: FriendRequestResponse) => {
+        acceptFriendMutation.mutate(request.username);
+    };
 
-            try {
-                const res = await fetch(`${URLS.friends}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
+    const handleDeclineFriend = async (request: FriendRequestResponse) => {
+        declineFriendMutation.mutate(request.userId);
+    };
 
-                if (!res.ok) {
-                    throw new Error("Failed to fetch friends");
-                }
+    const handleRemoveFriend = async (friend: Friend) => {
+        removeFriendMutation.mutate(friend.userId);
+    };
 
-                const data: Friend[] = await res.json();
-                setFriends(data);
-                setFriendsLoading(false);
-            } catch (error) {
-                console.error(error);
-            }
-        };
-
-        const fetchFriendRequests = async () => {
-            const token = localStorage.getItem("token");
-
-            if (!token) {
-                return;
-            }
-
-            try {
-                const res = await fetch(`${URLS.friends}/requests`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-
-                if (!res.ok) {
-                    throw new Error("Failed to fetch friend requests");
-                }
-
-                const data: FriendRequestResponse[] = await res.json();
-                setFriendRequests(data);
-            } catch (error) {
-                console.error(error);
-            }
-        };
-
-        fetchHistory();
-        fetchFriends();
-        fetchFriendRequests();
-    }, [])
-
-    const totalPages = Math.ceil(history.length / itemsPerPage);
+    const totalPages = Math.ceil((historyQuery.data?.length ?? 0) / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
-    const currentGames = history.slice(startIndex, startIndex + itemsPerPage);
+    const currentGames = historyQuery.data?.slice(startIndex, startIndex + itemsPerPage) ?? [];
 
     return (
         <div className="profile">
@@ -412,7 +387,7 @@ export default function Profile() {
                     <>
                         <h2 className="friends-title">Pending Requests</h2>
                         <ul className="friends-list">
-                            {friendRequests.map((request) => (
+                            {friendRequestsQuery.data?.map((request) => (
                                 <li key={request.userId}>
                                     <span>{request.username}</span>
                                     <div className="friend-request-actions">
@@ -433,13 +408,13 @@ export default function Profile() {
                     ) : (
                     <>
                         <h2 className="friends-title">Friends</h2>
-                        {friendsLoading ? (
+                        {friendsQuery.isLoading ? (
                             <p className="loading-friends">Loading your friend list...</p>
-                        ) : friends.length === 0 ? (
+                        ) : friendsQuery.data?.length === 0 ? (
                             <p className="no-friends">No friends yet</p>
                         ) : (
                             <ul className="friends-list">
-                                {friends.map((friend) => (
+                                {friendsQuery.data?.map((friend) => (
                                     <li key={friend.userId}>
                                         {friend.username}
                                         <button onClick={() => handleRemoveFriend(friend)}>
@@ -449,10 +424,10 @@ export default function Profile() {
                                 ))}
                             </ul>
                         )}
-                        {friendRequests.length > 0 && (
+                        {friendRequestsQuery.data && friendRequestsQuery.data.length > 0 && (
                             <button className="friend-requests-button" onClick={() => setShowFriendRequests(true)}>
-                                {friendRequests.length} pending friend request
-                                {friendRequests.length !== 1 ? "s" : ""}
+                                {friendRequestsQuery.data.length} pending friend request
+                                {friendRequestsQuery.data.length !== 1 ? "s" : ""}
                             </button>
                         )}
 
@@ -470,7 +445,7 @@ export default function Profile() {
                 </div>
                 <h2 className="history-title">Game History</h2>
                 <div className="history-content">
-                    {historyLoading ? (
+                    {historyQuery.isLoading ? (
                         <p className="no-games">Loading your game history...</p>
                     ) : currentGames.length === 0 ? (
                         <p className="no-games">No games played yet</p>
@@ -590,7 +565,7 @@ export default function Profile() {
                 <div className="game-actions">
                     <div className="join-game">
                         <button onClick={handleNewGame}>
-                            {loading ? "Creating..." : "New game"}
+                            {newGameMutation.isPending ? "Creating..." : "New game"}
                         </button>
                         <input
                             type="text"

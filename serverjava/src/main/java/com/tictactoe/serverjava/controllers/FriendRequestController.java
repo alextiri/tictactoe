@@ -36,10 +36,10 @@ public class FriendRequestController {
     }
 
     @PostMapping("/requests")
-    public void sendFriendRequest(@RequestParam Integer receiverId, Authentication authentication) {
+    public void sendFriendRequest(@RequestParam String username, Authentication authentication) {
         Integer senderId = Integer.parseInt(authentication.getName());
 
-        friendRequestService.sendRequest(senderId, receiverId);
+        friendRequestService.sendRequest(senderId, username);
     }
 
     @GetMapping
