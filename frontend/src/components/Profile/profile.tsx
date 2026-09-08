@@ -147,7 +147,7 @@ export default function Profile() {
         }
 
         try {
-            const userRes = await fetch(`http://localhost:8080/api/friends/user?username=${encodeURIComponent(friendUsername)}`,
+            const userRes = await fetch(`${URLS.friends}/user?username=${encodeURIComponent(friendUsername)}`,
                 {
                     headers: {
                         Authorization: `Bearer ${token}`
@@ -160,7 +160,7 @@ export default function Profile() {
             }
 
             const receiverId: number = await userRes.json();
-            const res = await fetch(`http://localhost:8080/api/friends/requests?receiverId=${receiverId}`,
+            const res = await fetch(`${URLS.friends}/requests?receiverId=${receiverId}`,
                 {
                     method: "POST",
                     headers: {
@@ -190,7 +190,7 @@ export default function Profile() {
 
         try {
             const res = await fetch(
-                `http://localhost:8080/api/friends/requests?receiverId=${request.userId}`,
+                `${URLS.friends}/requests?receiverId=${request.userId}`,
                 {
                     method: "POST",
                     headers: {
@@ -238,7 +238,7 @@ export default function Profile() {
 
         try {
             const res = await fetch(
-                `http://localhost:8080/api/friends/requests?senderId=${request.userId}`,
+                `${URLS.friends}/requests?senderId=${request.userId}`,
                 {
                     method: "DELETE",
                     headers: {
@@ -277,7 +277,7 @@ export default function Profile() {
 
         try {
             const res = await fetch(
-                `http://localhost:8080/api/friends?friendId=${friend.userId}`,
+                `${URLS.friends}?friendId=${friend.userId}`,
                 {
                     method: "DELETE",
                     headers: {
