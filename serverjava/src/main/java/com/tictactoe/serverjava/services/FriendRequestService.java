@@ -22,15 +22,18 @@ public class FriendRequestService {
     private final FriendRequestRepository friendRequestRepository;
     private final FriendshipRepository friendshipRepository;
     private final UserRepository userRepository;
+    private final PresenceService presenceService;
 
     public FriendRequestService(
         FriendRequestRepository friendRequestRepository,
         FriendshipRepository friendshipRepository,
-        UserRepository userRepository
+        UserRepository userRepository,
+        PresenceService presenceService
     ) {
         this.friendRequestRepository = friendRequestRepository;
         this.friendshipRepository = friendshipRepository;
         this.userRepository = userRepository;
+        this.presenceService = presenceService;
     }
 
     public Integer getUserIdByUsername(String username) {
@@ -53,7 +56,8 @@ public class FriendRequestService {
                 new FriendResponse(
                     user.getId(),
                     user.getUsername(),
-                    friendship.getCreatedAt()
+                    friendship.getCreatedAt(),
+                    presenceService.isOnline(user.getId())
                 )
             );
         }
@@ -81,6 +85,13 @@ public class FriendRequestService {
         }
 
         return responses;
+    }
+
+    public List<Integer> getFriendIds(Integer userId) {
+        return friendshipRepository.findByUserId(userId)
+            .stream()
+            .map(Friendship::getFriendId)
+            .toList();
     }
 
     @Transactional

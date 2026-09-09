@@ -46,6 +46,7 @@ public class GameWebSocketHandler implements WebSocketHandler {
             try {
                 session.close(CloseStatus.BAD_DATA);
             } catch (IOException ignored) {
+                System.out.println(ignored);
             }
             return;
         }
@@ -62,26 +63,17 @@ public class GameWebSocketHandler implements WebSocketHandler {
     }
 
     @Override
-    public void handleMessage(
-        WebSocketSession session,
-        WebSocketMessage<?> message
-    ) {
+    public void handleMessage(WebSocketSession session, WebSocketMessage<?> message) {
         System.out.println("WebSocket message: " + message.getPayload());
     }
 
     @Override
-    public void handleTransportError(
-        WebSocketSession session,
-        Throwable exception
-    ) {
+    public void handleTransportError(WebSocketSession session, Throwable exception) {
         System.out.println("WebSocket error: " + exception.getMessage());
     }
 
     @Override
-    public void afterConnectionClosed(
-        WebSocketSession session,
-        CloseStatus status
-    ) {
+    public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
         Integer gameId = sessionGames.remove(session);
 
         if (gameId != null) {

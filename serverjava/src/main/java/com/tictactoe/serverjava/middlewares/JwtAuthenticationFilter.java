@@ -34,7 +34,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
-        } else if (request.getRequestURI().equals("/ws/games")) {
+        } else if (
+            request.getRequestURI().equals("/ws/games") ||
+            request.getRequestURI().equals("/ws/presence")
+        ) {
             token = request.getParameter("token");
         }
 
@@ -42,7 +45,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        
+
         String userId = jwtService.extractUserId(token);
         UsernamePasswordAuthenticationToken authentication =
         new UsernamePasswordAuthenticationToken(

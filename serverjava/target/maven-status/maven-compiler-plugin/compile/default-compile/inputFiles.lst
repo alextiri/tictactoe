@@ -19,6 +19,7 @@
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/dtos/UserResponse.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/middlewares/GameWebSocketHandler.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/middlewares/JwtAuthenticationFilter.java
+/Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/middlewares/PresenceWebSocketHandler.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/models/FriendRequest.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/models/Friendship.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/models/Game.java
@@ -32,4 +33,5 @@
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/services/FriendRequestService.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/services/GameService.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/services/JwtService.java
+/Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/services/PresenceService.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/services/UserService.java

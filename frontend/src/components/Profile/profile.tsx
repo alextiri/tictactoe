@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom"
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import './profile.css'
 import "@radix-ui/themes/styles.css";
 import * as Popover from "@radix-ui/react-popover";
@@ -11,6 +11,7 @@ interface Friend {
     userId: number;
     username: string;
     friendsSince: string;
+    online: boolean;
 }
 
 interface FriendRequestResponse {
@@ -355,6 +356,51 @@ export default function Profile() {
         removeFriendMutation.mutate(friend.userId);
     };
 
+    useEffect(() => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            return;
+        }
+
+        const socket = new WebSocket(
+            `${import.meta.env.VITE_WS_URL}/ws/presence?token=${token}`
+        );
+
+        socket.onopen = () => {
+            console.log("Presence WebSocket connected");
+        };
+
+        socket.onclose = () => {
+            console.log("Presence WebSocket disconnected");
+        };
+
+        socket.onmessage = (event) => {
+            const [status, userId] = event.data.split(":");
+
+            queryClient.setQueryData<Friend[]>(
+                ["friends", user?.id],
+                (friends) => {
+                    if (!friends) {
+                        return friends;
+                    }
+
+                    return friends.map((friend) =>
+                        friend.userId === Number(userId)
+                            ? {
+                                ...friend,
+                                online: status === "online"
+                            }
+                            : friend
+                    );
+                }
+            );
+        };
+
+        return () => {
+            socket.close();
+        };
+    }, []);
+
     const totalPages = Math.ceil((historyQuery.data?.length ?? 0) / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const currentGames = historyQuery.data?.slice(startIndex, startIndex + itemsPerPage) ?? [];
@@ -415,9 +461,26 @@ export default function Profile() {
                             <ul className="friends-list">
                                 {friendsQuery.data?.map((friend) => (
                                     <li key={friend.userId}>
-                                        {friend.username}
+                                        <span
+                                            style={{
+                                                display: "inline-flex",
+                                                alignItems: "center",
+                                                gap: "8px",
+                                            }}
+                                        >
+                                            <span
+                                                style={{
+                                                    width: "8px",
+                                                    height: "8px",
+                                                    borderRadius: "50%",
+                                                    backgroundColor: friend.online ? "green" : "red",
+                                                }}
+                                            />
+                                            {friend.username}
+                                        </span>
+
                                         <button onClick={() => handleRemoveFriend(friend)}>
-                                            Remove
+                                            Unfriend
                                         </button>
                                     </li>
                                 ))}
