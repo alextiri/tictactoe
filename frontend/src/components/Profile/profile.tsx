@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom"
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import './profile.css'
 import "@radix-ui/themes/styles.css";
 import * as Popover from "@radix-ui/react-popover";
@@ -360,53 +360,6 @@ export default function Profile() {
         removeFriendMutation.mutate(friend.userId);
     };
 
-    useEffect(() => {
-        const token = localStorage.getItem("token");
-        if (!token) {
-            return;
-        }
-
-        const socket = new WebSocket(
-            `${import.meta.env.VITE_WS_URL}/ws/presence?token=${token}`
-        );
-
-        presenceSocket.current = socket;
-
-        socket.onopen = () => {
-            console.log("Presence WebSocket connected");
-        };
-
-        socket.onclose = () => {
-            console.log("Presence WebSocket disconnected");
-        };
-
-        socket.onmessage = (event) => {
-            const [status, userId] = event.data.split(":");
-
-            queryClient.setQueryData<Friend[]>(
-                ["friends", user?.id],
-                (friends) => {
-                    if (!friends) {
-                        return friends;
-                    }
-
-                    return friends.map((friend) =>
-                        friend.userId === Number(userId)
-                            ? {
-                                ...friend,
-                                online: status === "online"
-                            }
-                            : friend
-                    );
-                }
-            );
-        };
-
-        return () => {
-            socket.close();
-        };
-    }, []);
-
     const totalPages = Math.ceil((historyQuery.data?.length ?? 0) / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const currentGames = historyQuery.data?.slice(startIndex, startIndex + itemsPerPage) ?? [];
@@ -532,7 +485,17 @@ export default function Profile() {
                                     const game = currentGames[index];
                                     return game ? (
                                         <tr key={game.gameId}>
-                                            <td>{game.gameCode}</td>
+                                            <td>
+                                                <div className="game-code-cell">
+                                                    <span>{game.gameCode}</span>
+
+                                                    {!game.winner && game.moves.length !== 9 && (
+                                                        <button onClick={() => joinGameMutation.mutate(game.gameCode)}>
+                                                            Rejoin
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </td>
                                             <td>
                                                 {game.winner
                                                     ? game.winner

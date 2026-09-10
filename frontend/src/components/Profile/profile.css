@@ -40,11 +40,45 @@
 .profile .history-table {
   height: 285px;
   margin-bottom: 0;
+  width: 600px;
+}
+
+.profile .history-table th {
+  text-align: center;
 }
 
 .profile .history-table th:nth-child(2),
 .profile .history-table td:nth-child(2) {
   width: 80px;
+}
+
+.history-table {
+  table-layout: fixed;
+}
+
+.history-table th:nth-child(1),
+.history-table td:nth-child(1) {
+  width: 200px;
+}
+
+.history-table th:nth-child(2),
+.history-table td:nth-child(2) {
+  width: 80px;
+}
+
+.history-table th:nth-child(3),
+.history-table td:nth-child(3) {
+  width: 190px;
+}
+
+.history-table th:nth-child(4),
+.history-table td:nth-child(4) {
+  width: 130px;
+  text-align: center;
+}
+
+.history-table td button {
+  margin: 0;
 }
 
 .profile table {
@@ -452,4 +486,102 @@
   margin: 0;
 }
 
+.game-code-cell {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+@media (min-width: 951px) and (max-width: 1300px) {
+  .profile .friends-panel {
+    left: 30px;
+  }
+
+}
+
+@media (max-width: 950px) {
+  .profile {
+    min-height: 100vh;
+    padding: 20px 10px;
+    box-sizing: border-box;
+  }
+
+  .profile .profile-center {
+    position: relative;
+    top: auto;
+    left: auto;
+    transform: none;
+    width: min(600px, 100%);
+    order: 1;
+  }
+
+  .profile .history-table {
+    width: 100%;
+  }
+
+  .history-table {
+    table-layout: fixed;
+  }
+
+  .history-table th:nth-child(1),
+  .history-table td:nth-child(1) {
+    width: 40%;
+  }
+
+  .history-table th:nth-child(2),
+  .history-table td:nth-child(2) {
+    width: 15%;
+  }
+
+  .history-table th:nth-child(3),
+  .history-table td:nth-child(3) {
+    width: 25%;
+  }
+
+  .history-table th:nth-child(4),
+  .history-table td:nth-child(4) {
+    width: 20%;
+  }
+
+  .history-table td:nth-child(4) {
+    padding: 0;
+    text-align: center;
+  }
+
+  .history-table td:nth-child(4) button {
+    display: block;
+    margin: 0 auto;
+  }
+
+  .history-table th,
+  .history-table td {
+    padding: 8px 6px;
+    font-size: 0.8rem;
+  }
+
+  .game-code-cell {
+    gap: 4px;
+    white-space: nowrap;
+  }
+
+  .game-code-cell button,
+  .history-table td button {
+      padding: 5px 8px;
+      font-size: 0.75rem;
+      margin: 0;
+      flex-shrink: 0;
+  }
+
+  .profile .friends-panel {
+    position: relative;
+    left: auto;
+    top: auto;
+    transform: none;
+    width: min(600px, 100%);
+    height: 220px;
+    margin-top: 20px;
+    order: 2;
+  }
+}
 
