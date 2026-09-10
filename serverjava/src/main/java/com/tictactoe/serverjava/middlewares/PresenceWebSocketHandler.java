@@ -4,6 +4,7 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
+import org.springframework.web.socket.TextMessage;
 
 import com.tictactoe.serverjava.services.FriendRequestService;
 import com.tictactoe.serverjava.services.JwtService;
@@ -39,6 +40,30 @@ public class PresenceWebSocketHandler extends TextWebSocketHandler {
                     presenceService.sendToUser(
                         friendId,
                         "online: " + userId
+                    );
+                }
+            }
+        }
+    }
+
+    @Override
+    public void handleTextMessage(WebSocketSession session, TextMessage message) {
+        if (!message.getPayload().equals("logout")) {
+            return;
+        }
+
+        Integer userId = getUserId(session);
+
+        if (userId != null) {
+            boolean wentOffline = presenceService.userDisconnected(userId, session);
+
+            if (wentOffline) {
+                System.out.println("User " + userId + " is offline");
+
+                for (Integer friendId : friendRequestService.getFriendIds(userId)) {
+                    presenceService.sendToUser(
+                        friendId,
+                        "offline:" + userId
                     );
                 }
             }

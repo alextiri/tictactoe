@@ -52,6 +52,7 @@ export default function Profile() {
     const presenceSocket = useRef<WebSocket | null>(null);
     
     const handleLogout = () => {
+        presenceSocket.current?.send("logout");
         presenceSocket.current?.close();
         localStorage.removeItem('token');
         localStorage.removeItem('user');
