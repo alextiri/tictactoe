@@ -284,3 +284,56 @@
     transform: scale(1.04);
   }
 }
+
+@media (max-width: 950px) {
+  .game-container {
+    padding: 20px 10px;
+    box-sizing: border-box;
+  }
+
+  .game-code {
+    font-size: 1.5rem;
+    padding: 8px 14px;
+    margin-bottom: 10px;
+  }
+
+  .game-area {
+    width: 100%;
+    flex-direction: column;
+  }
+
+  .players {
+    position: relative;
+    right: auto;
+    margin: 0 0 10px;
+    width: min(100%, 220px);
+    box-sizing: border-box;
+    order: 1;
+  }
+
+  .board {
+    order: 2;
+    width: min(100%, 330px);
+    aspect-ratio: 1;
+    box-sizing: border-box;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 8px;
+    padding: 10px;
+    margin: 10px 0;
+  }
+
+  .cell {
+    font-size: 2.5rem;
+  }
+
+  .moves {
+    position: relative;
+    left: auto;
+    margin: 10px 0 0;
+    width: min(100%, 330px);
+    box-sizing: border-box;
+    order: 3;
+  }
+
+}
