@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom"
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import './profile.css'
 import "@radix-ui/themes/styles.css";
 import * as Popover from "@radix-ui/react-popover";
@@ -48,8 +48,11 @@ export default function Profile() {
 
     const storedUser = localStorage.getItem("user");
     const user = storedUser ? JSON.parse(storedUser) : null;
+
+    const presenceSocket = useRef<WebSocket | null>(null);
     
     const handleLogout = () => {
+        presenceSocket.current?.close();
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         queryClient.clear();
@@ -365,6 +368,8 @@ export default function Profile() {
         const socket = new WebSocket(
             `${import.meta.env.VITE_WS_URL}/ws/presence?token=${token}`
         );
+
+        presenceSocket.current = socket;
 
         socket.onopen = () => {
             console.log("Presence WebSocket connected");
