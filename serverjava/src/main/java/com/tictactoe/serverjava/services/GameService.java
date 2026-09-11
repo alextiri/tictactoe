@@ -69,12 +69,19 @@ public class GameService {
                 );
             }
 
+            boolean yourTurn = "ongoing".equals(game.getStatus()) && (
+                    (game.getPlayerXId().equals(userId) && moves.size() % 2 == 0)
+                    || 
+                    (game.getPlayerOId() != null && game.getPlayerOId().equals(userId) && moves.size() % 2 == 1)
+                );
+
             history.add(new GameHistoryResponse(
                     game.getId(),
                     game.getGameCode(),
                     game.getWinner(),
                     game.getCreatedAt(),
-                    moveResponses
+                    moveResponses,
+                    yourTurn
                 )
             );
         }
@@ -83,7 +90,12 @@ public class GameService {
     }
 
     public Game createGame(Integer userId) {
+        return createGame(userId, null);
+    }
+
+    public Game createGame(Integer playerXId, Integer playerOId) {
         String gameCode;
+
         do {
             gameCode = UUID.randomUUID()
                 .toString()
@@ -94,8 +106,8 @@ public class GameService {
         Game game = new Game();
 
         game.setGameCode(gameCode);
-        game.setPlayerXId(userId);
-        game.setPlayerOId(null);
+        game.setPlayerXId(playerXId);
+        game.setPlayerOId(playerOId);
         game.setBoard(new ArrayList<>(Collections.nCopies(9, "")));
         game.setWinner(null);
         game.setStatus("ongoing");

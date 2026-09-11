@@ -1,6 +1,7 @@
 import { Outlet } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import './authenticatedLayout.css'
 
 export default function AuthenticatedLayout() {
     const queryClient = useQueryClient();
@@ -28,6 +29,44 @@ export default function AuthenticatedLayout() {
         };
 
         socket.onmessage = (event) => {
+            console.log(
+                "Presence message received by user",
+                user.id,
+                ":",
+                event.data
+            );
+            if (event.data === "game-invitation:new") {
+                queryClient.invalidateQueries({
+                    queryKey: ["gameInvitations"],
+                });
+
+                return;
+            }
+
+            if (event.data.startsWith("game-invitation:accepted:")) {
+                queryClient.invalidateQueries({
+                    queryKey: ["sentGameInvitations"],
+                });
+
+                return;
+            }
+
+            if (event.data.startsWith("game-invitation:declined:")) {
+                queryClient.invalidateQueries({
+                    queryKey: ["sentGameInvitations"],
+                });
+
+                return;
+            }
+
+            if (event.data.startsWith("game-invitation:cancelled:")) {
+                queryClient.invalidateQueries({
+                    queryKey: ["gameInvitations"],
+                });
+
+                return;
+            }
+
             const [status, userId] = event.data.split(":");
 
             queryClient.setQueryData(
@@ -54,5 +93,9 @@ export default function AuthenticatedLayout() {
         };
     }, [queryClient]);
 
-    return <Outlet />;
+    return (
+        <>
+            <Outlet />
+        </>
+    );
 }

@@ -4,7 +4,7 @@ import Home from './components/Home/home'
 import Profile from './components/Profile/profile';
 import Register from './components/Register/register';
 import Game from './components/Game/game';
-import AuthenticatedLayout from './components/AuthenticatedLayout/AuthenticatedLayout';
+import AuthenticatedLayout from './components/AuthenticatedLayout/authenticatedLayout';
 
 function App() {
     return (

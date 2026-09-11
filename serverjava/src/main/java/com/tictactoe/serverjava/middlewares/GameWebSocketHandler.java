@@ -21,7 +21,7 @@ public class GameWebSocketHandler implements WebSocketHandler {
     private final Map<Integer, Set<WebSocketSession>> gameSessions =
         new ConcurrentHashMap<>();
     private final Map<WebSocketSession, Integer> sessionGames =
-        new ConcurrentHashMap<>();
+        new ConcurrentHashMap<>();  
     private final ObjectMapper objectMapper;
 
     public GameWebSocketHandler(ObjectMapper objectMapper) {

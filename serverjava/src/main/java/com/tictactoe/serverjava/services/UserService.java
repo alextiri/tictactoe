@@ -27,6 +27,13 @@ public class UserService {
         if (username == null || email == null || password == null) {
             throw new IllegalArgumentException("All fields are required");
         }
+
+        if (username.length() > 12) {
+            throw new IllegalArgumentException(
+                "Username must be at most 12 characters long"
+            );
+        }
+
         if (password.length() < 8) {
             throw new IllegalArgumentException(
                 "Password must be at least 8 characters long"

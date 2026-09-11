@@ -4,5 +4,6 @@ export const URLS = {
     login: `${API_URL}/auth/login`,
     register: `${API_URL}/auth/register`,
     games: `${API_URL}/games`,
-    friends: `${API_URL}/friends`
+    friends: `${API_URL}/friends`,
+    gameInvitations: `${API_URL}/game-invitations`
 };

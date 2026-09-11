@@ -3,6 +3,7 @@
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/config/WebSocketConfig.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/controllers/FriendRequestController.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/controllers/GameController.java
+/Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/controllers/GameInvitationController.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/controllers/GlobalExceptionHandler.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/controllers/HealthController.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/controllers/TestController.java
@@ -11,6 +12,7 @@
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/dtos/FriendResponse.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/dtos/GameHistoryListResponse.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/dtos/GameHistoryResponse.java
+/Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/dtos/GameInvitationResponse.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/dtos/GameMoveResponse.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/dtos/LoginRequest.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/dtos/LoginResponse.java
@@ -23,14 +25,17 @@
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/models/FriendRequest.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/models/Friendship.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/models/Game.java
+/Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/models/GameInvitation.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/models/GameMove.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/models/User.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/repositories/FriendRequestRepository.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/repositories/FriendshipRepository.java
+/Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/repositories/GameInvitationRepository.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/repositories/GameMoveRepository.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/repositories/GameRepository.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/repositories/UserRepository.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/services/FriendRequestService.java
+/Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/services/GameInvitationService.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/services/GameService.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/services/JwtService.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/services/PresenceService.java

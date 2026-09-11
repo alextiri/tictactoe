@@ -8,5 +8,6 @@ public record GameHistoryResponse(
     String gameCode,
     String winner,
     LocalDateTime createdAt,
-    List<GameMoveResponse> moves
+    List<GameMoveResponse> moves,
+    boolean yourTurn
 ) {}

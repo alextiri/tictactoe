@@ -33,6 +33,7 @@ interface GameHistoryEntry {
     winner: string | null;
     createdAt: string;
     moves: Move[];
+    yourTurn: boolean;
 }
 
 export default function Profile() {
@@ -124,6 +125,44 @@ export default function Profile() {
         return data.history;
     };
 
+    const fetchGameInvitations = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            return;
+        }
+
+        const res = await fetch(`${URLS.gameInvitations}`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (!res.ok) {
+            throw new Error("Failed to fetch game invitations");
+        }
+
+        return await res.json();
+    };
+
+    const fetchSentGameInvitations = async () => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            return;
+        }
+
+        const res = await fetch(`${URLS.gameInvitations}/sent`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (!res.ok) {
+            throw new Error("Failed to fetch sent game invitations");
+        }
+
+        return await res.json();
+    };
+
     const queryClient = useQueryClient();
 
     const friendsQuery = useQuery({
@@ -139,6 +178,18 @@ export default function Profile() {
     const historyQuery = useQuery({
         queryKey: ["gameHistory", user?.id],
         queryFn: fetchHistory
+    });
+
+    const gameInvitationsQuery = useQuery({
+        queryKey: ["gameInvitations", user?.id],
+        queryFn: fetchGameInvitations,
+        enabled: !!user,
+    });
+
+    const sentGameInvitationsQuery = useQuery({
+        queryKey: ["sentGameInvitations", user?.id],
+        queryFn: fetchSentGameInvitations,
+        enabled: !!user,
     });
 
     const newGameMutation = useMutation({
@@ -266,33 +317,6 @@ export default function Profile() {
         }
     });
 
-    const removeFriendMutation = useMutation({
-        mutationFn: async (friendId: number) => {
-            const token = localStorage.getItem("token");
-            if (!token) {
-                throw new Error("You must be logged in");
-            }
-
-            const res = await fetch(`${URLS.friends}?friendId=${friendId}`, {
-                    method: "DELETE",
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                }
-            );
-
-            if (!res.ok) {
-                const data = await res.json();
-                throw new Error(data.message || "Failed to remove friend");
-            }
-        },
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: ["friends"]
-            });
-        }
-    });
-
     const declineFriendMutation = useMutation({
         mutationFn: async (senderId: number) => {
             const token = localStorage.getItem("token");
@@ -322,6 +346,167 @@ export default function Profile() {
                 queryKey: ["friendRequests"]
             });
         }
+    });
+
+    const removeFriendMutation = useMutation({
+        mutationFn: async (friendId: number) => {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                throw new Error("You must be logged in");
+            }
+
+            const res = await fetch(`${URLS.friends}?friendId=${friendId}`, {
+                    method: "DELETE",
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(data.message || "Failed to remove friend");
+            }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["friends"]
+            });
+        }
+    });
+
+    const sendGameInvitationMutation = useMutation({
+        mutationFn: async (receiverId: number) => {
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                throw new Error("You must be logged in");
+            }
+
+            const res = await fetch(URLS.gameInvitations, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`
+                },
+                body: JSON.stringify({ receiverId }),
+            });
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(
+                    data.message || "Failed to send game invitation"
+                );
+            }
+
+            return await res.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["sentGameInvitations"],
+            });
+        },
+    });
+
+    const acceptGameInvitationMutation = useMutation({
+        mutationFn: async (invitationId: number) => {
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                throw new Error("You must be logged in");
+            }
+
+            const res = await fetch(
+                `${URLS.gameInvitations}/${invitationId}/accept`,
+                {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(
+                    data.message || "Failed to accept game invitation"
+                );
+            }
+
+            return await res.json();
+        },
+        onSuccess: (data) => {
+            navigate(`/game/${data.game.id}`);
+        },
+    });
+
+    const declineGameInvitationMutation = useMutation({
+        mutationFn: async (invitationId: number) => {
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                throw new Error("You must be logged in");
+            }
+
+            const res = await fetch(
+                `${URLS.gameInvitations}/${invitationId}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(
+                    data.message || "Failed to decline game invitation"
+                );
+            }
+
+            return await res.json();
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["gameInvitations"],
+            });
+        },
+    });
+
+    const cancelGameInvitationMutation = useMutation({
+        mutationFn: async (invitationId: number) => {
+            const token = localStorage.getItem("token");
+            if (!token) {
+                throw new Error("You must be logged in");
+            }
+
+            const res = await fetch(
+                `${URLS.gameInvitations}/sent/${invitationId}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+
+            if (!res.ok) {
+                const data = await res.json();
+
+                throw new Error(
+                    data.message || "Failed to cancel game invitation"
+                );
+            }
+
+            return await res.json();
+        },
+
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["sentGameInvitations"],
+            });
+        },
     });
 
     const handleNewGame = () => {
@@ -363,6 +548,23 @@ export default function Profile() {
     const totalPages = Math.ceil((historyQuery.data?.length ?? 0) / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const currentGames = historyQuery.data?.slice(startIndex, startIndex + itemsPerPage) ?? [];
+
+    const allGameInvitations = [
+        ...(gameInvitationsQuery.data ?? []).map((invitation: any) => ({
+            ...invitation,
+            type: "received" as const,
+        })),
+        ...(sentGameInvitationsQuery.data ?? []).map((invitation: any) => ({
+            ...invitation,
+            type: invitation.status === "DECLINED"
+                ? "declined" as const
+                : "sent" as const,
+        })),
+    ].sort(
+        (a, b) =>
+            new Date(b.createdAt).getTime() -
+            new Date(a.createdAt).getTime()
+    );
 
     return (
         <div className="profile">
@@ -438,9 +640,15 @@ export default function Profile() {
                                             {friend.username}
                                         </span>
 
-                                        <button onClick={() => handleRemoveFriend(friend)}>
-                                            Unfriend
-                                        </button>
+                                        <div>
+                                            <button onClick={() => sendGameInvitationMutation.mutate(friend.userId)}>
+                                                Invite
+                                            </button>
+
+                                            <button onClick={() => handleRemoveFriend(friend)}>
+                                                Unfriend
+                                            </button>
+                                        </div>
                                     </li>
                                 ))}
                             </ul>
@@ -487,8 +695,9 @@ export default function Profile() {
                                         <tr key={game.gameId}>
                                             <td>
                                                 <div className="game-code-cell">
-                                                    <span>{game.gameCode}</span>
-
+                                                    <span className={game.yourTurn ? "your-turn" : ""}>
+                                                        {game.gameCode}
+                                                    </span>
                                                     {!game.winner && game.moves.length !== 9 && (
                                                         <button onClick={() => joinGameMutation.mutate(game.gameCode)}>
                                                             Rejoin
@@ -507,7 +716,7 @@ export default function Profile() {
                                             <td>
                                                 <Popover.Root>
                                                     <Popover.Trigger asChild>
-                                                        <button className="profile-moves-btn">Moves</button>
+                                                        <button className="profile-moves-btn">Show</button>
                                                     </Popover.Trigger>
                                                     <Popover.Portal>
                                                         <Popover.Content
@@ -611,6 +820,67 @@ export default function Profile() {
                     )}
                     <button onClick={handleLogout}>Logout</button>
                 </div>
+            </div>
+            <div className="game-invitations-panel">
+                <h2 className="history-title">Game Invitations</h2>
+
+                {gameInvitationsQuery.isLoading ? (
+                    <p>Loading invitations...</p>
+                ) : gameInvitationsQuery.data?.length === 0 &&
+                    sentGameInvitationsQuery.data?.length === 0 ? (
+                    <p>No game invitations</p>
+                ) : (
+                    <ul>
+                        {allGameInvitations.map((invitation: any) => (
+                            <li key={`${invitation.type}-${invitation.id}`}>
+                                <span>
+                                    {invitation.type === "received"
+                                        ? invitation.username
+                                        : invitation.type === "sent"
+                                        ? `You invited ${invitation.username}`
+                                        : `${invitation.username} declined your invitation`}
+                                </span>
+                                <div>
+                                    {invitation.type === "received" ? (
+                                        <>
+                                            <button
+                                                onClick={() =>
+                                                    acceptGameInvitationMutation.mutate(invitation.id)
+                                                }
+                                            >
+                                                Accept
+                                            </button>
+
+                                            <button
+                                                onClick={() =>
+                                                    declineGameInvitationMutation.mutate(invitation.id)
+                                                }
+                                            >
+                                                Decline
+                                            </button>
+                                        </>
+                                    ) : invitation.type === "sent" ? (
+                                        <button
+                                            onClick={() =>
+                                                cancelGameInvitationMutation.mutate(invitation.id)
+                                            }
+                                        >
+                                            Cancel
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() =>
+                                                cancelGameInvitationMutation.mutate(invitation.id)
+                                            }
+                                        >
+                                            X
+                                        </button>
+                                    )}
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                )}
             </div>
         </div>
     )
