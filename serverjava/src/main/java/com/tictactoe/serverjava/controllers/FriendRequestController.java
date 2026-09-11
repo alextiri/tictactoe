@@ -1,5 +1,6 @@
 package com.tictactoe.serverjava.controllers;
 
+import com.tictactoe.serverjava.dtos.FriendPageResponse;
 import com.tictactoe.serverjava.dtos.FriendRequestResponse;
 import com.tictactoe.serverjava.dtos.FriendResponse;
 import com.tictactoe.serverjava.services.FriendRequestService;
@@ -43,10 +44,10 @@ public class FriendRequestController {
     }
 
     @GetMapping
-    public List<FriendResponse> getFriends(Authentication authentication) {
+    public FriendPageResponse getFriends(@RequestParam int page, @RequestParam int size, Authentication authentication) {
         Integer userId = Integer.parseInt(authentication.getName());
 
-        return friendRequestService.getFriends(userId);
+        return friendRequestService.getFriends(userId, page, size);
     }
 
     @DeleteMapping("/requests")

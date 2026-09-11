@@ -8,6 +8,7 @@
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/controllers/HealthController.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/controllers/TestController.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/controllers/UserController.java
+/Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/dtos/FriendPageResponse.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/dtos/FriendRequestResponse.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/dtos/FriendResponse.java
 /Users/Tiri/Workspace/tictactoe/serverjava/src/main/java/com/tictactoe/serverjava/dtos/GameHistoryListResponse.java

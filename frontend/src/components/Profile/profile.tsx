@@ -4,7 +4,7 @@ import './profile.css'
 import "@radix-ui/themes/styles.css";
 import * as Popover from "@radix-ui/react-popover";
 import { URLS } from "../../config/utils";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, useInfiniteQuery } from "@tanstack/react-query";
 import BubbleBackground from "../BubbleBackground";
 
 interface Friend {
@@ -12,6 +12,11 @@ interface Friend {
     username: string;
     friendsSince: string;
     online: boolean;
+}
+
+interface FriendPageResponse {
+    friends: Friend[];
+    hasNext: boolean;
 }
 
 interface FriendRequestResponse {
@@ -61,13 +66,13 @@ export default function Profile() {
         navigate('/');
     }
 
-    const fetchFriends = async () => {
+    const fetchFriends = async (page: number): Promise<FriendPageResponse> => {
         const token = localStorage.getItem("token");
         if (!token) {
-            return;
+            throw new Error("You must be logged in");
         }
 
-        const res = await fetch(`${URLS.friends}`, {
+        const res = await fetch(`${URLS.friends}?page=${page}&size=20`, {
             headers: {
                 Authorization: `Bearer ${token}`
             }
@@ -77,7 +82,7 @@ export default function Profile() {
             throw new Error("Failed to fetch friends");
         }
 
-        const data: Friend[] = await res.json();
+        const data: FriendPageResponse = await res.json();
         return data;
     };
 
@@ -165,9 +170,12 @@ export default function Profile() {
 
     const queryClient = useQueryClient();
 
-    const friendsQuery = useQuery({
+    const friendsQuery = useInfiniteQuery({
         queryKey: ["friends", user?.id],
-        queryFn: fetchFriends
+        queryFn: ({ pageParam }) => fetchFriends(pageParam),
+        initialPageParam: 0,
+        getNextPageParam: (lastPage, allPages) =>
+            lastPage.hasNext ? allPages.length : undefined
     });
 
     const friendRequestsQuery = useQuery({
@@ -579,6 +587,20 @@ export default function Profile() {
             new Date(a.createdAt).getTime()
     );
 
+    const friends = friendsQuery.data?.pages.flatMap(page => page.friends) ?? [];
+
+    const handleFriendsScroll = (e: React.UIEvent<HTMLUListElement>) => {
+        const element = e.currentTarget;
+
+        if (
+            element.scrollTop + element.clientHeight >= element.scrollHeight - 10 &&
+            friendsQuery.hasNextPage &&
+            !friendsQuery.isFetchingNextPage
+        ) {
+            friendsQuery.fetchNextPage();
+        }
+    };
+
     return (
         <div className="profile">
             <BubbleBackground/>
@@ -629,43 +651,46 @@ export default function Profile() {
                         <h2 className="friends-title">Friends</h2>
                         {friendsQuery.isLoading ? (
                             <p className="loading-friends">Loading your friend list...</p>
-                        ) : friendsQuery.data?.length === 0 ? (
+                        ) : friends.length === 0 ? (
                             <p className="no-friends">No friends yet</p>
                         ) : (
-                            <ul className="friends-list">
-                                {friendsQuery.data?.map((friend) => (
-                                    <li key={friend.userId}>
-                                        <span
-                                            style={{
-                                                display: "inline-flex",
-                                                alignItems: "center",
-                                                gap: "8px",
-                                            }}
-                                        >
+                            <div className="friends-list-container">
+                                <ul className="friends-list" onScroll={handleFriendsScroll}>
+                                    {friends.map((friend) => (
+                                        <li key={friend.userId}>
                                             <span
                                                 style={{
-                                                    width: "8px",
-                                                    height: "8px",
-                                                    borderRadius: "50%",
-                                                    backgroundColor: friend.online ? "green" : "red",
+                                                    display: "inline-flex",
+                                                    alignItems: "center",
+                                                    gap: "8px",
                                                 }}
-                                            />
-                                            {friend.username}
-                                        </span>
+                                            >
+                                                <span
+                                                    style={{
+                                                        width: "8px",
+                                                        height: "8px",
+                                                        borderRadius: "50%",
+                                                        backgroundColor: friend.online ? "green" : "red",
+                                                    }}
+                                                />
+                                                {friend.username}
+                                            </span>
 
-                                        <div>
-                                            <button onClick={() => sendGameInvitationMutation.mutate(friend.userId)}>
-                                                Invite
-                                            </button>
+                                            <div>
+                                                <button onClick={() => sendGameInvitationMutation.mutate(friend.userId)}>
+                                                    Invite
+                                                </button>
 
-                                            <button onClick={() => handleRemoveFriend(friend)}>
-                                                Unfriend
-                                            </button>
-                                        </div>
-                                    </li>
-                                ))}
-                            </ul>
+                                                <button onClick={() => handleRemoveFriend(friend)}>
+                                                    Unfriend
+                                                </button>
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
                         )}
+                        <div className="friends-divider" />
                         {friendRequestsQuery.data && friendRequestsQuery.data.length > 0 && (
                             <button className="friend-requests-button" onClick={() => setShowFriendRequests(true)}>
                                 {friendRequestsQuery.data.length} pending friend request

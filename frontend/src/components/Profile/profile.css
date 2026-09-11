@@ -425,7 +425,17 @@
 }
 
 .profile .friends-list {
-  margin-top: 15px;
+    margin-top: 15px;
+}
+
+.profile .friends-list-container {
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+.profile .friends-divider {
+    border-top: 2px solid #cfe7dc;
+    margin-top: 10px;
 }
 
 .profile .friends-list li {

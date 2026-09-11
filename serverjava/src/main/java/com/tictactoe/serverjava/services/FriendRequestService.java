@@ -7,8 +7,11 @@ import com.tictactoe.serverjava.repositories.UserRepository;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import com.tictactoe.serverjava.dtos.FriendPageResponse;
 import com.tictactoe.serverjava.dtos.FriendRequestResponse;
 import com.tictactoe.serverjava.dtos.FriendResponse;
 import com.tictactoe.serverjava.models.FriendRequest;
@@ -44,11 +47,15 @@ public class FriendRequestService {
             );
     }
 
-    public List<FriendResponse> getFriends(Integer userId) {
-        List<Friendship> friendships = friendshipRepository.findByUserId(userId);
+    public FriendPageResponse getFriends(Integer userId, int page, int size) {
+        Page<Friendship> friendships = friendshipRepository.findByUserId(
+                userId,
+                PageRequest.of(page, size)
+            );
+
         List<FriendResponse> friends = new ArrayList<>();
 
-        for (Friendship friendship : friendships) {
+        for (Friendship friendship : friendships.getContent()) {
             User user = userRepository.findById(friendship.getFriendId())
                 .orElseThrow();
 
@@ -61,8 +68,11 @@ public class FriendRequestService {
                 )
             );
         }
-
-        return friends;
+        
+        return new FriendPageResponse(
+            friends,
+            friendships.hasNext()
+        );
     }
 
     public List<FriendRequestResponse> getPendingRequests(Integer userId) {
