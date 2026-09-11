@@ -481,7 +481,7 @@ export default function Profile() {
         },
     });
 
-    const cancelGameInvitationMutation = useMutation({
+    const deleteGameInvitationMutation = useMutation({
         mutationFn: async (invitationId: number) => {
             const token = localStorage.getItem("token");
             if (!token) {
@@ -878,7 +878,7 @@ export default function Profile() {
                                     ) : invitation.type === "sent" ? (
                                         <button
                                             onClick={() =>
-                                                cancelGameInvitationMutation.mutate(invitation.id)
+                                                deleteGameInvitationMutation.mutate(invitation.id)
                                             }
                                         >
                                             Cancel
@@ -886,7 +886,7 @@ export default function Profile() {
                                     ) : (
                                         <button
                                             onClick={() =>
-                                                cancelGameInvitationMutation.mutate(invitation.id)
+                                                deleteGameInvitationMutation.mutate(invitation.id)
                                             }
                                         >
                                             X

@@ -97,7 +97,7 @@ public class GameInvitationController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Integer senderId = Integer.valueOf(authentication.getName());
 
-        gameInvitationService.cancelInvitation(
+        gameInvitationService.deleteInvitation(
             id,
             senderId
         );

@@ -177,7 +177,7 @@ public class GameInvitationService {
     }
 
     @Transactional
-    public void cancelInvitation(Integer invitationId, Integer senderId) {
+    public void deleteInvitation(Integer invitationId, Integer senderId) {
         GameInvitation invitation =
             gameInvitationRepository.findById(invitationId)
                 .orElseThrow(() ->
