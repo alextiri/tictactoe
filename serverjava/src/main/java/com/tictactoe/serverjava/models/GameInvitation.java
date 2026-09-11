@@ -19,6 +19,9 @@ public class GameInvitation {
     @Column(nullable = false, length = 20)
     private String status;
 
+    @Column(name = "game_id")
+    private Integer gameId;
+
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
@@ -48,6 +51,14 @@ public class GameInvitation {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public Integer getGameId() {
+        return gameId;
+    }
+
+    public void setGameId(Integer gameId) {
+        this.gameId = gameId;
     }
 
     public LocalDateTime getCreatedAt() {

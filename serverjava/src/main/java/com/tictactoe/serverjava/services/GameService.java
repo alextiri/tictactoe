@@ -44,7 +44,7 @@ public class GameService {
     }
 
     public List<GameHistoryResponse> getUserGameHistory(Integer userId) {
-        List<Game> games = gameRepository.findByPlayerXIdOrPlayerOIdOrderByCreatedAtDesc(userId, userId);
+        List<Game> games = gameRepository.findUserGameHistory(userId);
         List<GameHistoryResponse> history = new ArrayList<>();
 
         for (Game game : games) {

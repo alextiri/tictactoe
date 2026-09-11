@@ -192,6 +192,13 @@ export default function Profile() {
         enabled: !!user,
     });
 
+    const gameNotificationsQuery = useQuery({
+        queryKey: ["gameNotifications", user?.id],
+        queryFn: async () =>
+            queryClient.getQueryData<any[]>(["gameNotifications", user?.id]) ?? [],
+        enabled: !!user,
+    });
+
     const newGameMutation = useMutation({
         mutationFn: async () => {
             const token = localStorage.getItem("token");
@@ -558,7 +565,13 @@ export default function Profile() {
             ...invitation,
             type: invitation.status === "DECLINED"
                 ? "declined" as const
+                : invitation.status === "ACCEPTED"
+                ? "notification" as const
                 : "sent" as const,
+        })),
+        ...(gameNotificationsQuery.data ?? []).map((notification: any) => ({
+            ...notification,
+            type: "notification" as const,
         })),
     ].sort(
         (a, b) =>
@@ -826,15 +839,18 @@ export default function Profile() {
 
                 {gameInvitationsQuery.isLoading ? (
                     <p>Loading invitations...</p>
-                ) : gameInvitationsQuery.data?.length === 0 &&
-                    sentGameInvitationsQuery.data?.length === 0 ? (
+                ) : allGameInvitations.length === 0 ? (
                     <p>No game invitations</p>
                 ) : (
                     <ul>
                         {allGameInvitations.map((invitation: any) => (
                             <li key={`${invitation.type}-${invitation.id}`}>
                                 <span>
-                                    {invitation.type === "received"
+                                    {invitation.type === "notification"
+                                        ? invitation.status === "ACCEPTED"
+                                            ? `${invitation.username} accepted your invitation: Game ${invitation.gameCode}`
+                                            : invitation.message
+                                        : invitation.type === "received"
                                         ? invitation.username
                                         : invitation.type === "sent"
                                         ? `You invited ${invitation.username}`

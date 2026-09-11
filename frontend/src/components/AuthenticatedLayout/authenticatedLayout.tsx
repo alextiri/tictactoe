@@ -44,8 +44,12 @@ export default function AuthenticatedLayout() {
             }
 
             if (event.data.startsWith("game-invitation:accepted:")) {
-                queryClient.invalidateQueries({
-                    queryKey: ["sentGameInvitations"],
+                queryClient.refetchQueries({
+                    queryKey: ["sentGameInvitations", user.id],
+                });
+
+                queryClient.refetchQueries({
+                    queryKey: ["gameHistory", user.id],
                 });
 
                 return;

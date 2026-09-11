@@ -1,7 +1,6 @@
 package com.tictactoe.serverjava.services;
 
 import com.tictactoe.serverjava.dtos.GameInvitationResponse;
-import com.tictactoe.serverjava.middlewares.GameWebSocketHandler;
 import com.tictactoe.serverjava.models.Game;
 import com.tictactoe.serverjava.models.GameInvitation;
 import com.tictactoe.serverjava.models.User;
@@ -89,7 +88,8 @@ public class GameInvitationService {
                     sender.getId(),
                     sender.getUsername(),
                     invitation.getCreatedAt().atOffset(ZoneOffset.UTC),
-                    invitation.getStatus()
+                    invitation.getStatus(),
+                    null
                 )
             );
         }
@@ -116,11 +116,13 @@ public class GameInvitationService {
             invitation.getSenderId()
         );
 
-        gameInvitationRepository.delete(invitation);
+        invitation.setGameId(game.getId());
+        invitation.setStatus("ACCEPTED");
+        gameInvitationRepository.save(invitation);
 
         presenceService.sendToUser(
             invitation.getSenderId(),
-            "game-invitation:accepted:" + receiverId
+            "game-invitation:accepted:" + receiverId + ":" + game.getGameCode()
         );
 
         return game;
@@ -163,7 +165,10 @@ public class GameInvitationService {
                     receiver.getId(),
                     receiver.getUsername(),
                     invitation.getCreatedAt().atOffset(ZoneOffset.UTC),
-                    invitation.getStatus()
+                    invitation.getStatus(),
+                    invitation.getGameId() != null
+                        ? gameService.getGameById(invitation.getGameId()).getGameCode()
+                        : null
                 )
             );
         }

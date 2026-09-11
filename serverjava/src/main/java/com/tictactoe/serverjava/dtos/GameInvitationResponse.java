@@ -7,5 +7,6 @@ public record GameInvitationResponse(
     Integer userId,
     String username,
     OffsetDateTime createdAt,
-    String status
+    String status,
+    String gameCode
 ) {}
