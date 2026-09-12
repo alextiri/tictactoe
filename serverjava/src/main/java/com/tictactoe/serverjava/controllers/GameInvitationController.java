@@ -2,11 +2,14 @@ package com.tictactoe.serverjava.controllers;
 
 import java.util.Map;
 
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import com.tictactoe.serverjava.dtos.GameInvitationPageResponse;
 import com.tictactoe.serverjava.models.Game;
 import com.tictactoe.serverjava.services.GameInvitationService;
 
@@ -36,16 +39,6 @@ public class GameInvitationController {
             .body(Map.of(
                 "message", "Game invitation sent successfully"
             ));
-    }
-
-    @GetMapping
-    public ResponseEntity<?> getPendingInvitations() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Integer receiverId = Integer.valueOf(authentication.getName());
-
-        return ResponseEntity.ok(
-            gameInvitationService.getPendingInvitations(receiverId)
-        );
     }
 
     @PostMapping("/{id}/accept")
@@ -82,16 +75,6 @@ public class GameInvitationController {
         );
     }
 
-    @GetMapping("/sent")
-    public ResponseEntity<?> getSentInvitations() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Integer senderId = Integer.valueOf(authentication.getName());
-
-        return ResponseEntity.ok(
-            gameInvitationService.getSentInvitations(senderId)
-        );
-    }
-
     @DeleteMapping("/sent/{id}")
     public ResponseEntity<?> cancelInvitation(@PathVariable Integer id) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -106,6 +89,19 @@ public class GameInvitationController {
             Map.of(
                 "message", "Game invitation cancelled"
             )
+        );
+    }
+
+    @GetMapping("/all")
+    public GameInvitationPageResponse getUserInvitations(
+        @PageableDefault(size = 20) Pageable pageable,
+        Authentication authentication
+    ) {
+        Integer userId = Integer.parseInt(authentication.getName());
+
+        return gameInvitationService.getUserInvitations(
+            userId,
+            pageable
         );
     }
 }

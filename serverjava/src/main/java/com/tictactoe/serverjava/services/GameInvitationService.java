@@ -1,16 +1,20 @@
 package com.tictactoe.serverjava.services;
 
-import com.tictactoe.serverjava.dtos.GameInvitationResponse;
 import com.tictactoe.serverjava.models.Game;
 import com.tictactoe.serverjava.models.GameInvitation;
 import com.tictactoe.serverjava.models.User;
 import com.tictactoe.serverjava.repositories.GameInvitationRepository;
 import com.tictactoe.serverjava.repositories.UserRepository;
 
+import com.tictactoe.serverjava.dtos.GameInvitationPageResponse;
+import com.tictactoe.serverjava.dtos.GameInvitationPageItem;
+
 import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -69,34 +73,6 @@ public class GameInvitationService {
         );
     }
 
-    public List<GameInvitationResponse> getPendingInvitations(Integer receiverId) {
-        List<GameInvitation> invitations =
-            gameInvitationRepository.findByReceiverIdAndStatus(
-                receiverId,
-                "PENDING"
-            );
-
-        List<GameInvitationResponse> responses = new ArrayList<>();
-
-        for (GameInvitation invitation : invitations) {
-            User sender = userRepository.findById(invitation.getSenderId())
-                .orElseThrow();
-
-            responses.add(
-                new GameInvitationResponse(
-                    invitation.getId(),
-                    sender.getId(),
-                    sender.getUsername(),
-                    invitation.getCreatedAt().atOffset(ZoneOffset.UTC),
-                    invitation.getStatus(),
-                    null
-                )
-            );
-        }
-
-        return responses;
-    }
-
     @Transactional
     public Game acceptInvitation(Integer invitationId, Integer receiverId) {
         GameInvitation invitation =
@@ -151,31 +127,6 @@ public class GameInvitationService {
         );
     }
 
-    public List<GameInvitationResponse> getSentInvitations(Integer senderId) {
-        List<GameInvitation> invitations = gameInvitationRepository.findBySenderId(senderId);
-        List<GameInvitationResponse> responses = new ArrayList<>();
-
-        for (GameInvitation invitation : invitations) {
-            User receiver = userRepository.findById(invitation.getReceiverId())
-                .orElseThrow();
-
-            responses.add(
-                new GameInvitationResponse(
-                    invitation.getId(),
-                    receiver.getId(),
-                    receiver.getUsername(),
-                    invitation.getCreatedAt().atOffset(ZoneOffset.UTC),
-                    invitation.getStatus(),
-                    invitation.getGameId() != null
-                        ? gameService.getGameById(invitation.getGameId()).getGameCode()
-                        : null
-                )
-            );
-        }
-
-        return responses;
-    }
-
     @Transactional
     public void deleteInvitation(Integer invitationId, Integer senderId) {
         GameInvitation invitation =
@@ -195,6 +146,62 @@ public class GameInvitationService {
         presenceService.sendToUser(
             invitation.getReceiverId(),
             "game-invitation:cancelled:" + senderId
+        );
+    }
+
+    public GameInvitationPageResponse getUserInvitations(Integer userId, Pageable pageable) {
+        Page<GameInvitation> invitations =
+            gameInvitationRepository.findUserInvitations(
+                userId,
+                pageable
+            );
+
+        List<GameInvitationPageItem> responses = new ArrayList<>();
+
+        for (GameInvitation invitation : invitations) {
+            boolean isSender =
+                invitation.getSenderId().equals(userId);
+
+            Integer otherUserId =
+                isSender
+                    ? invitation.getReceiverId()
+                    : invitation.getSenderId();
+
+            User otherUser = userRepository.findById(otherUserId)
+                .orElseThrow();
+
+            String type;
+
+            if (!isSender) {
+                type = "received";
+            } else if (invitation.getStatus().equals("ACCEPTED")) {
+                type = "notification";
+            } else if (invitation.getStatus().equals("DECLINED")) {
+                type = "declined";
+            } else {
+                type = "sent";
+            }
+
+            responses.add(
+                new GameInvitationPageItem(
+                    invitation.getId(),
+                    otherUser.getId(),
+                    otherUser.getUsername(),
+                    invitation.getCreatedAt().atOffset(ZoneOffset.UTC),
+                    invitation.getStatus(),
+                    invitation.getGameId() != null
+                        ? gameService
+                            .getGameById(invitation.getGameId())
+                            .getGameCode()
+                        : null,
+                    type
+                )
+            );
+        }
+
+        return new GameInvitationPageResponse(
+            responses,
+            invitations.hasNext()
         );
     }
 }

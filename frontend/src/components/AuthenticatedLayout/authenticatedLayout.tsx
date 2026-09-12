@@ -45,7 +45,7 @@ export default function AuthenticatedLayout() {
 
             if (event.data.startsWith("game-invitation:accepted:")) {
                 queryClient.refetchQueries({
-                    queryKey: ["sentGameInvitations", user.id],
+                    queryKey: ["gameInvitations", user.id],
                 });
 
                 queryClient.refetchQueries({
@@ -57,7 +57,7 @@ export default function AuthenticatedLayout() {
 
             if (event.data.startsWith("game-invitation:declined:")) {
                 queryClient.invalidateQueries({
-                    queryKey: ["sentGameInvitations"],
+                    queryKey: ["gameInvitations"],
                 });
 
                 return;

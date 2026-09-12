@@ -25,6 +25,15 @@ interface FriendRequestResponse {
     createdAt: string;
 }
 
+interface GameInvitation {
+    id: number;
+    userId: number;
+    username: string;
+    createdAt: string;
+    status: string;
+    gameCode: string | null;
+}
+
 interface Move {
     moveNumber: number;
     symbol: string;
@@ -39,6 +48,11 @@ interface GameHistoryEntry {
     createdAt: string;
     moves: Move[];
     yourTurn: boolean;
+}
+
+interface GameInvitationPageResponse {
+    invitations: GameInvitation[];
+    hasNext: boolean;
 }
 
 export default function Profile() {
@@ -130,39 +144,23 @@ export default function Profile() {
         return data.history;
     };
 
-    const fetchGameInvitations = async () => {
+    const fetchGameInvitations = async (page: number): Promise<GameInvitationPageResponse> => {
         const token = localStorage.getItem("token");
         if (!token) {
-            return;
+            throw new Error("You must be logged in");
         }
 
-        const res = await fetch(`${URLS.gameInvitations}`, {
-            headers: {
-                Authorization: `Bearer ${token}`
+        const res = await fetch(
+            `${URLS.gameInvitations}/all?page=${page}&size=20`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
             }
-        });
+        );
 
         if (!res.ok) {
             throw new Error("Failed to fetch game invitations");
-        }
-
-        return await res.json();
-    };
-
-    const fetchSentGameInvitations = async () => {
-        const token = localStorage.getItem("token");
-        if (!token) {
-            return;
-        }
-
-        const res = await fetch(`${URLS.gameInvitations}/sent`, {
-            headers: {
-                Authorization: `Bearer ${token}`
-            }
-        });
-
-        if (!res.ok) {
-            throw new Error("Failed to fetch sent game invitations");
         }
 
         return await res.json();
@@ -188,22 +186,12 @@ export default function Profile() {
         queryFn: fetchHistory
     });
 
-    const gameInvitationsQuery = useQuery({
+    const gameInvitationsQuery = useInfiniteQuery({
         queryKey: ["gameInvitations", user?.id],
-        queryFn: fetchGameInvitations,
-        enabled: !!user,
-    });
-
-    const sentGameInvitationsQuery = useQuery({
-        queryKey: ["sentGameInvitations", user?.id],
-        queryFn: fetchSentGameInvitations,
-        enabled: !!user,
-    });
-
-    const gameNotificationsQuery = useQuery({
-        queryKey: ["gameNotifications", user?.id],
-        queryFn: async () =>
-            queryClient.getQueryData<any[]>(["gameNotifications", user?.id]) ?? [],
+        queryFn: ({ pageParam }) => fetchGameInvitations(pageParam),
+        initialPageParam: 0,
+        getNextPageParam: (lastPage, allPages) =>
+            lastPage.hasNext ? allPages.length : undefined,
         enabled: !!user,
     });
 
@@ -418,7 +406,7 @@ export default function Profile() {
         },
         onSuccess: () => {
             queryClient.invalidateQueries({
-                queryKey: ["sentGameInvitations"],
+                queryKey: ["gameInvitations"],
             });
         },
     });
@@ -519,7 +507,7 @@ export default function Profile() {
 
         onSuccess: () => {
             queryClient.invalidateQueries({
-                queryKey: ["sentGameInvitations"],
+                queryKey: ["gameInvitations"],
             });
         },
     });
@@ -564,28 +552,12 @@ export default function Profile() {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const currentGames = historyQuery.data?.slice(startIndex, startIndex + itemsPerPage) ?? [];
 
-    const allGameInvitations = [
-        ...(gameInvitationsQuery.data ?? []).map((invitation: any) => ({
-            ...invitation,
-            type: "received" as const,
-        })),
-        ...(sentGameInvitationsQuery.data ?? []).map((invitation: any) => ({
-            ...invitation,
-            type: invitation.status === "DECLINED"
-                ? "declined" as const
-                : invitation.status === "ACCEPTED"
-                ? "notification" as const
-                : "sent" as const,
-        })),
-        ...(gameNotificationsQuery.data ?? []).map((notification: any) => ({
-            ...notification,
-            type: "notification" as const,
-        })),
-    ].sort(
-        (a, b) =>
-            new Date(b.createdAt).getTime() -
-            new Date(a.createdAt).getTime()
-    );
+    const gameInvitations = gameInvitationsQuery.data?.pages.flatMap(
+        page => page.invitations) ?? [];
+
+    const allGameInvitations = gameInvitations.map((invitation) => ({
+        ...invitation,
+    }));
 
     const friends = friendsQuery.data?.pages.flatMap(page => page.friends) ?? [];
 
@@ -598,6 +570,18 @@ export default function Profile() {
             !friendsQuery.isFetchingNextPage
         ) {
             friendsQuery.fetchNextPage();
+        }
+    };
+
+    const handleGameInvitationsScroll = (e: React.UIEvent<HTMLUListElement>) => {
+        const element = e.currentTarget;
+
+        if (
+            element.scrollTop + element.clientHeight >= element.scrollHeight - 10 &&
+            gameInvitationsQuery.hasNextPage &&
+            !gameInvitationsQuery.isFetchingNextPage
+        ) {
+            gameInvitationsQuery.fetchNextPage();
         }
     };
 
@@ -867,60 +851,62 @@ export default function Profile() {
                 ) : allGameInvitations.length === 0 ? (
                     <p>No game invitations</p>
                 ) : (
-                    <ul>
-                        {allGameInvitations.map((invitation: any) => (
-                            <li key={`${invitation.type}-${invitation.id}`}>
-                                <span>
-                                    {invitation.type === "notification"
-                                        ? invitation.status === "ACCEPTED"
-                                            ? `${invitation.username} accepted your invitation: Game ${invitation.gameCode}`
-                                            : invitation.message
-                                        : invitation.type === "received"
-                                        ? invitation.username
-                                        : invitation.type === "sent"
-                                        ? `You invited ${invitation.username}`
-                                        : `${invitation.username} declined your invitation`}
-                                </span>
-                                <div>
-                                    {invitation.type === "received" ? (
-                                        <>
-                                            <button
-                                                onClick={() =>
-                                                    acceptGameInvitationMutation.mutate(invitation.id)
-                                                }
-                                            >
-                                                Accept
-                                            </button>
+                    <div className="game-invitations-list-container">
+                        <ul onScroll={handleGameInvitationsScroll}>
+                            {allGameInvitations.map((invitation: any) => (
+                                <li key={`${invitation.type}-${invitation.id}`}>
+                                    <span>
+                                        {invitation.type === "notification"
+                                            ? invitation.status === "ACCEPTED"
+                                                ? `${invitation.username} accepted your invitation: Game ${invitation.gameCode}`
+                                                : invitation.message
+                                            : invitation.type === "received"
+                                            ? invitation.username
+                                            : invitation.type === "sent"
+                                            ? `You invited ${invitation.username}`
+                                            : `${invitation.username} declined your invitation`}
+                                    </span>
+                                    <div>
+                                        {invitation.type === "received" ? (
+                                            <>
+                                                <button
+                                                    onClick={() =>
+                                                        acceptGameInvitationMutation.mutate(invitation.id)
+                                                    }
+                                                >
+                                                    Accept
+                                                </button>
 
+                                                <button
+                                                    onClick={() =>
+                                                        declineGameInvitationMutation.mutate(invitation.id)
+                                                    }
+                                                >
+                                                    Decline
+                                                </button>
+                                            </>
+                                        ) : invitation.type === "sent" ? (
                                             <button
                                                 onClick={() =>
-                                                    declineGameInvitationMutation.mutate(invitation.id)
+                                                    deleteGameInvitationMutation.mutate(invitation.id)
                                                 }
                                             >
-                                                Decline
+                                                Cancel
                                             </button>
-                                        </>
-                                    ) : invitation.type === "sent" ? (
-                                        <button
-                                            onClick={() =>
-                                                deleteGameInvitationMutation.mutate(invitation.id)
-                                            }
-                                        >
-                                            Cancel
-                                        </button>
-                                    ) : (
-                                        <button
-                                            onClick={() =>
-                                                deleteGameInvitationMutation.mutate(invitation.id)
-                                            }
-                                        >
-                                            X
-                                        </button>
-                                    )}
-                                </div>
-                            </li>
-                        ))}
-                    </ul>
+                                        ) : (
+                                            <button
+                                                onClick={() =>
+                                                    deleteGameInvitationMutation.mutate(invitation.id)
+                                                }
+                                            >
+                                                X
+                                            </button>
+                                        )}
+                                    </div>
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
                 )}
             </div>
         </div>

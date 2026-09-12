@@ -2,7 +2,6 @@ package com.tictactoe.serverjava.controllers;
 
 import com.tictactoe.serverjava.dtos.FriendPageResponse;
 import com.tictactoe.serverjava.dtos.FriendRequestResponse;
-import com.tictactoe.serverjava.dtos.FriendResponse;
 import com.tictactoe.serverjava.services.FriendRequestService;
 
 import java.util.List;

@@ -425,17 +425,20 @@
 }
 
 .profile .friends-list {
-    margin-top: 15px;
+  margin-top: 15px;
 }
 
 .profile .friends-list-container {
-    max-height: 200px;
-    overflow-y: auto;
+  max-height: 200px;
+  overflow-y: auto;
 }
 
 .profile .friends-divider {
-    border-top: 2px solid #cfe7dc;
-    margin-top: 10px;
+  position: absolute;
+  left: 20px;
+  right: 20px;
+  bottom: 100px;
+  border-top: 2px solid #cfe7dc;
 }
 
 .profile .friends-list li {
@@ -514,6 +517,11 @@
 
 .profile .add-friend-actions button {
   margin: 0;
+}
+
+.profile .game-invitations-list-container {
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 .game-code-cell {
@@ -683,7 +691,7 @@
     top: auto;
     transform: none;
     width: min(600px, 100%);
-    height: 220px;
+    height: 400px;
     margin-top: 20px;
     order: 2;
   }
