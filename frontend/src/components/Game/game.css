@@ -336,4 +336,8 @@
     order: 3;
   }
 
+  .moves-header,
+  .moves-list li {
+      font-size: 0.9rem;
+  }
 }
