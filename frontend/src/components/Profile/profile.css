@@ -1,304 +1,3 @@
-.profile {
-  position: relative;
-  isolation: isolate;
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-
-  min-height: 100vh;
-  
-  font-family: 'Arial', sans-serif;
-}
-
-.profile .profile-center {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 500px;
-}
-
-.profile > * {
-  position: relative;
-  z-index: 1;
-}
-
-.profile-header {
-  background-color: #f5faf6;
-  border: 1px solid #cfe7dc;
-  border-radius: 14px;
-  padding: 20px 30px;
-  margin-bottom: 10px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-}
-
-.profile .history-table {
-  height: 285px;
-  margin-bottom: 0;
-  width: 600px;
-}
-
-.profile .history-table th {
-  text-align: center;
-}
-
-.profile .history-table th:nth-child(2),
-.profile .history-table td:nth-child(2) {
-  width: 80px;
-}
-
-.history-table {
-  table-layout: fixed;
-}
-
-.history-table th:nth-child(1),
-.history-table td:nth-child(1) {
-  width: 180px;
-}
-
-.history-table th:nth-child(2),
-.history-table td:nth-child(2) {
-  width: 100px;
-}
-
-.history-table th:nth-child(3),
-.history-table td:nth-child(3) {
-  width: 190px;
-}
-
-.history-table th:nth-child(4),
-.history-table td:nth-child(4) {
-  width: 130px;
-  text-align: center;
-}
-
-.history-table td button {
-  margin: 0;
-}
-
-.profile table {
-  width: 100%;
-  border-collapse: separate;
-  border-spacing: 0;
-  margin-bottom: 15px;
-  font-size: 0.9rem;
-  border: 1px solid #cfe7dc;
-  border-radius: 14px;
-  overflow: hidden;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-}
-
-.profile-title {
-  font-size: 1.8rem;
-  text-align: center;
-  margin: 0;
-  color: #1f7a4f;
-}
-
-.history-title {
-  font-size: 1.5rem;
-  margin: 25px 0 8px;
-  padding: 0 12px 4px;
-  color: #1f7a4f;
-  border-bottom: 2px solid #cfe7dc;
-}
-
-.history-content {
-  height: 285px;
-  flex-shrink: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.profile thead {
-  background-color: #4caf7f;
-  color: #fff;
-}
-
-.profile th,
-.profile td {
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  text-align: left;
-  line-height: 1.3;
-}
-
-.profile tbody tr {
-  height: 50px;
-}
-
-.profile tbody td {
-  height: 50px;
-  box-sizing: border-box;
-  padding: 0 12px;
-  vertical-align: middle;
-}
-
-.profile th {
-  font-weight: 600;
-}
-
-.profile td {
-  background-color: #fff;
-}
-
-.profile tbody tr:nth-child(even) td {
-  background-color: #f5f5f5;
-}
-
-.profile td ul li {
-  font-size: 0.85rem;
-  line-height: 1.3;
-  margin-left: 5px;
-}
-
-.profile button {
-  padding: 8px 16px;
-  margin: 5px 5px 0 0;
-  border: none;
-  border-radius: 8px;
-  background-color: #4caf7f;
-  color: #fff;
-  cursor: pointer;
-  font-weight: 600;
-  transition: background-color 0.2s ease, transform 0.1s ease;
-}
-
-.profile button:active {
-  transform: scale(0.98);
-}
-
-.profile button:hover {
-  background-color: #1f7a4f;
-}
-
-.profile button:disabled {
-  background-color: #999;
-  cursor: not-allowed;
-}
-
-.profile .pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-top: 20px;
-  margin-bottom: 20px;
-}
-
-.profile .pagination span {
-  font-weight: bold;
-  margin: 0 12px;
-}
-
-.profile-popover {
-  background: #ffffff;
-  border-radius: 10px;
-  padding: 12px;
-  width: 280px;
-  border: 1px solid #cfe7dc;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  font-size: 0.85rem;
-}
-
-.profile-popover-arrow {
-  fill: #ffffff;
-  stroke: #cfe7dc;
-  stroke-width: 1;
-}
-
-.profile-popover-header {
-  font-size: 0.9rem;
-  margin-bottom: 8px;
-  color: #1f7a4f;
-  border-bottom: 1px solid #e0f0e8;
-  padding-bottom: 6px;
-  font-weight: 600;
-}
-
-.profile-moves-header {
-  display: grid;
-  grid-template-columns: 30px 1fr 60px 60px;
-  gap: 6px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: #1f7a4f;
-  background-color: #f0faf6;
-  padding: 6px 6px;
-  border-radius: 6px;
-  margin-bottom: 6px;
-  border: 1px solid #dff1e8;
-}
-
-.mh-num {
-  text-align: left;
-}
-
-.mh-user {
-  text-align: left;
-}
-
-.mh-symbol {
-  text-align: center;
-}
-
-.mh-square {
-  text-align: center;
-}
-
-.profile-popover-body {
-  overflow-y: auto;
-}
-
-.profile-moves-list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.profile-moves-list li {
-  display: grid;
-  grid-template-columns: 30px 1fr 60px 60px;
-  gap: 6px;
-  padding: 6px 6px;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 0.8rem;
-  align-items: center;
-}
-
-.profile-moves-list li:last-child {
-  border-bottom: none;
-}
-
-.move-num {
-  font-weight: 600;
-  color: #1f7a4f;
-}
-
-.move-user {
-  color: #333;
-}
-
-.move-symbol {
-  font-weight: 700;
-  color: #4caf7f;
-  text-align: center;
-}
-
-.move-square {
-  color: #666;
-  text-align: center;
-}
-
-.profile-popover {
-  animation: profileFadeIn 0.15s ease-out;
-}
-
 @keyframes profileFadeIn {
   from {
     opacity: 0;
@@ -310,27 +9,350 @@
   }
 }
 
-.profile .join-game {
+@keyframes yourTurnPulse {
+  0%, 100% {
+    text-shadow: 0 0 0 rgba(255, 122, 0, 0);
+  }
+
+  50% {
+    text-shadow: 0 0 8px rgba(255, 122, 0, 0.8);
+  }
+}
+
+.friend-request-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.friend-request-actions button {
+  margin: 0;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+}
+
+.game-actions {
+  margin-top: 10px;
+  padding: 14px 20px;
+  border: 1px solid #cfe7dc;
+  border-radius: 14px;
+  background-color: #f5faf6;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.game-actions > button {
+  display: block;
+  margin: 5px auto 0;
+}
+
+.game-code-cell {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.game-invitations-panel {
+  position: fixed;
+  top: 50%;
+  right: calc(25% - 228px);
+  transform: translateY(-50%);
+
+  box-sizing: border-box;
+  width: 300px;
+  height: 400px;
+  padding: 20px;
+
+  border: 1px solid #cfe7dc;
+  border-radius: 14px;
+  background-color: #f5faf6;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+
+  z-index: 2;
+}
+
+.game-invitations-panel .history-title {
+  width: fit-content;
+  margin-right: auto;
+  margin-left: auto;
+}
+
+.game-invitations-panel li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.game-invitations-panel li > div {
+  display: flex;
+  gap: 5px;
+}
+
+.game-invitations-panel li > span {
+  font-size: 0.9rem;
+}
+
+.game-invitations-panel li button {
+  margin: 0;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+}
+
+.game-invitations-panel ul {
+  margin: 15px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.history-content {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 8px;
+  flex-shrink: 0;
+  height: 285px;
 }
 
-.profile .join-game input {
+.history-table {
+  table-layout: fixed;
+}
+
+.history-table td button {
+  margin: 0;
+}
+
+.history-table td:nth-child(1) {
+  width: 180px;
+}
+
+.history-table td:nth-child(2) {
+  width: 100px;
+}
+
+.history-table td:nth-child(3) {
+  width: 190px;
+}
+
+.history-table td:nth-child(4) {
+  width: 130px;
+  text-align: center;
+}
+
+.history-title {
+  margin: 25px 0 8px;
+  padding: 0 12px 4px;
+  border-bottom: 2px solid #cfe7dc;
+  color: #1f7a4f;
+  font-size: 1.5rem;
+}
+
+.invitation-error {
+  margin: 10px 0;
+  color: #c0392b;
+  font-size: 0.9rem;
+}
+
+.mh-num {
+  text-align: left;
+}
+
+.mh-square {
+  text-align: center;
+}
+
+.mh-symbol {
+  text-align: center;
+}
+
+.mh-user {
+  text-align: left;
+}
+
+.move-num {
+  color: #1f7a4f;
+  font-weight: 600;
+}
+
+.move-square {
+  color: #666;
+  text-align: center;
+}
+
+.move-symbol {
+  color: #4caf7f;
+  font-weight: 700;
+  text-align: center;
+}
+
+.move-user {
+  color: #333;
+}
+
+.pagination-slot {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  height: 60px;
+}
+
+.profile {
+  position: relative;
+  isolation: isolate;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+
+  min-height: 100vh;
+  
+  font-family: 'Arial', sans-serif;
+}
+
+.profile .add-friend-actions {
+  position: absolute;
+  right: 20px;
+  bottom: 15px;
+  left: 20px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.profile .add-friend-actions button {
+  margin: 0;
+}
+
+.profile .friend-requests-button {
+  position: absolute;
+  bottom: 55px;
+  left: 20px;
+}
+
+.profile .friends-divider {
+  position: absolute;
+  right: 20px;
+  bottom: 100px;
+  left: 20px;
+  border-top: 2px solid #cfe7dc;
+}
+
+.profile .friends-list {
+  margin-top: 15px;
+}
+
+.profile .friends-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   box-sizing: border-box;
-  padding: 8px 10px;
+  width: 100%;
+  margin-bottom: 5px;
+}
+
+.profile .friends-list li > div {
+  display: flex;
+  flex-shrink: 0;
+  margin-left: auto;
+  gap: 5px;
+}
+
+.profile .friends-list li > div button {
+  margin: 0;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.profile .friends-list li button {
+  margin: 0;
+}
+
+.profile .friends-list-container {
+  overflow-y: auto;
+  max-height: 200px;
+}
+
+.profile .friends-panel {
+  position: fixed;
+  top: 50%;
+  left: calc(25% - 228px);
+  transform: translateY(-50%);
+
+  box-sizing: border-box;
+  width: 300px;
+  height: 400px;
+  padding: 20px;
+
+  border: 1px solid #cfe7dc;
+  border-radius: 14px;
+  background-color: #f5faf6;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+
+  z-index: 2;
+}
+
+.profile .friends-panel .loading-friends {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin: 0;
+  text-align: center;
+  transform: translate(-50%, -50%);
+}
+
+.profile .friends-panel > .add-friend-button {
+  position: absolute;
+  bottom: 15px;
+  left: 20px;
+}
+
+.profile .friends-panel input {
+  position: absolute;
+  top: 45%;
+  left: 50%;
+  box-sizing: border-box;
+  width: 80%;
+  padding: 10px 12px;
+  border: 1px solid #cfe7dc;
   border-radius: 8px;
-  border: 1px solid #ccc;
-  width: 150px;
+  outline: none;
+  background-color: #fff;
+  font-size: 0.9rem;
+  transform: translate(-50%, -50%);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.profile .join-game button {
-  margin: 0 5px 0 0;
+.profile .friends-panel input:focus {
+  border-color: #4caf7f;
+  box-shadow: 0 0 0 2px rgba(76, 175, 127, 0.15);
 }
 
-.profile .join-game button:hover {
-  background-color: #1f7a4f;
+.profile .friends-title {
+  margin: 25px 0 8px;
+  padding: 0 12px 4px;
+  border-bottom: 2px solid #cfe7dc;
+  color: #1f7a4f;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+.profile .game-invitations-list-container {
+  overflow-y: auto;
+  max-height: 300px;
+}
+
+.profile .history-table {
+  width: 600px;
+  height: 285px;
+  margin-bottom: 0;
+}
+
+.profile .history-table td:nth-child(2) {
+  width: 80px;
+}
+
+.profile .history-table th {
+  text-align: center;
 }
 
 .profile .join-error {
@@ -341,273 +363,243 @@
   text-align: center;
 }
 
-.profile .no-games {
-  font-weight: 600;
-  font-size: 1rem;
-  color: #4caf7f;
-  margin: 20px 0;
-  text-align: center;
-  padding: 10px;
-  border: 1px dashed #cfe7dc;
-  border-radius: 8px;
-  background-color: #f5faf6;
-}
-
-.game-actions {
-  background-color: #f5faf6;
-  border: 1px solid #cfe7dc;
-  border-radius: 14px;
-  padding: 14px 20px;
-  margin-top: 10px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-}
-
-.game-actions > button {
-  display: block;
-  margin: 5px auto 0;
-}
-
-.profile .friends-panel {
-  position: fixed;
-  left: calc(25% - 228px);
-  top: 50%;
-  transform: translateY(-50%);
-
-  width: 300px;
-  height: 400px;
-  padding: 20px;
-  box-sizing: border-box;
-
-  background-color: #f5faf6;
-  border: 1px solid #cfe7dc;
-  border-radius: 14px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-
-  z-index: 2;
-}
-
-.profile .friends-panel input {
-  position: absolute;
-  top: 45%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  width: 80%;
-  box-sizing: border-box;
-  padding: 10px 12px;
-  border: 1px solid #cfe7dc;
-  border-radius: 8px;
-  background-color: #fff;
-  font-size: 0.9rem;
-  outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.profile .friends-panel input:focus {
-  border-color: #4caf7f;
-  box-shadow: 0 0 0 2px rgba(76, 175, 127, 0.15);
-}
-
-.profile .friends-title {
-  font-size: 1.5rem;
-  margin: 25px 0 8px;
-  padding: 0 12px 4px;
-  text-align: center;
-  color: #1f7a4f;
-  border-bottom: 2px solid #cfe7dc;
-}
-
-.pagination-slot {
-  height: 60px;
-  flex-shrink: 0;
+.profile .join-game {
   display: flex;
   justify-content: center;
   align-items: center;
+  gap: 8px;
 }
 
-.profile .friends-list {
-  margin-top: 15px;
+.profile .join-game button {
+  margin: 0 5px 0 0;
 }
 
-.profile .friends-list-container {
-  max-height: 200px;
-  overflow-y: auto;
+.profile .join-game button:hover {
+  background-color: #1f7a4f;
 }
 
-.profile .friends-divider {
-  position: absolute;
-  left: 20px;
-  right: 20px;
-  bottom: 100px;
-  border-top: 2px solid #cfe7dc;
-}
-
-.profile .friends-list li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  margin-bottom: 5px;
+.profile .join-game input {
   box-sizing: border-box;
-}
-
-.profile .friends-list li button {
-  margin: 0;
-}
-
-.friend-request-actions {
-  display: flex;
-  gap: 5px;
-}
-
-.friend-request-actions button {
-  padding: 5px 10px;
-  margin: 0;
-  font-size: 0.8rem;
-}
-
-.profile .friends-list li > div {
-  display: flex;
-  gap: 5px;
-  margin-left: auto;
-  flex-shrink: 0;
-}
-
-.profile .friends-list li > div button {
-  padding: 5px 10px;
-  margin: 0;
-  font-size: 0.8rem;
-  white-space: nowrap;
-}
-
-.profile .friends-list li > span,
-.game-invitations-panel li > span {
-  font-size: 0.9rem;
-}
-
-.profile .friend-requests-button {
-  position: absolute;
-  bottom: 55px;
-  left: 20px;
-}
-
-.profile .friends-panel > .add-friend-button {
-  position: absolute;
-  bottom: 15px;
-  left: 20px;
-}
-
-.profile .friends-panel .no-friends,
-.profile .friends-panel .loading-friends {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  margin: 0;
-  text-align: center;
-}
-
-.profile .add-friend-actions {
-  position: absolute;
-  bottom: 15px;
-  left: 20px;
-  right: 20px;
-  display: flex;
-  justify-content: space-between;
-}
-
-.profile .add-friend-actions button {
-  margin: 0;
-}
-
-.profile .game-invitations-list-container {
-  max-height: 300px;
-  overflow-y: auto;
+  width: 150px;
+  padding: 8px 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
 }
 
 .profile .no-game-invitations {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
   margin: 0;
+  transform: translate(-50%, -50%);
 }
 
-.game-code-cell {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-}
-
-.game-invitations-panel {
-  position: fixed;
-  right: calc(25% - 228px);
-  top: 50%;
-  transform: translateY(-50%);
-
-  width: 300px;
-  height: 400px;
-  padding: 20px;
-  box-sizing: border-box;
-
+.profile .no-games {
+  margin: 20px 0;
+  padding: 10px;
+  border: 1px dashed #cfe7dc;
+  border-radius: 8px;
   background-color: #f5faf6;
+  color: #4caf7f;
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.profile .pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.profile .pagination span {
+  margin: 0 12px;
+  font-weight: bold;
+}
+
+.profile .profile-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 500px;
+  transform: translate(-50%, -50%);
+}
+
+.profile > * {
+  position: relative;
+  z-index: 1;
+}
+
+.profile button {
+  margin: 5px 5px 0 0;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 8px;
+  background-color: #4caf7f;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.profile button:active {
+  transform: scale(0.98);
+}
+
+.profile button:disabled {
+  background-color: #999;
+  cursor: not-allowed;
+}
+
+.profile button:hover {
+  background-color: #1f7a4f;
+}
+
+.profile table {
+  overflow: hidden;
+  width: 100%;
+  margin-bottom: 15px;
   border: 1px solid #cfe7dc;
   border-radius: 14px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-
-  z-index: 2;
-}
-
-.game-invitations-panel .history-title {
-  width: fit-content;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.game-invitations-panel ul {
-  list-style: none;
-  padding: 0;
-  margin: 15px 0 0;
-}
-
-.game-invitations-panel li {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 5px;
-}
-
-.game-invitations-panel li > div {
-  display: flex;
-  gap: 5px;
-}
-
-.game-invitations-panel li button {
-  padding: 5px 10px;
-  margin: 0;
-  font-size: 0.8rem;
-}
-
-.invitation-error {
-  margin: 10px 0;
-  color: #c0392b;
   font-size: 0.9rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  border-spacing: 0;
+  border-collapse: separate;
+}
+
+.profile tbody td {
+  box-sizing: border-box;
+  height: 50px;
+  padding: 0 12px;
+  vertical-align: middle;
+}
+
+.profile tbody tr {
+  height: 50px;
+}
+
+.profile tbody tr:nth-child(even) td {
+  background-color: #f5f5f5;
+}
+
+.profile td {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  line-height: 1.3;
+  text-align: left;
+}
+
+.profile td {
+  background-color: #fff;
+}
+
+.profile td ul li {
+  margin-left: 5px;
+  font-size: 0.85rem;
+  line-height: 1.3;
+}
+
+.profile th {
+  font-weight: 600;
+}
+
+.profile thead {
+  background-color: #4caf7f;
+  color: #fff;
+}
+
+.profile-header {
+  margin-bottom: 10px;
+  padding: 20px 30px;
+  border: 1px solid #cfe7dc;
+  border-radius: 14px;
+  background-color: #f5faf6;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.profile-moves-header {
+  display: grid;
+  grid-template-columns: 30px 1fr 60px 60px;
+  margin-bottom: 6px;
+  padding: 6px 6px;
+  border: 1px solid #dff1e8;
+  border-radius: 6px;
+  background-color: #f0faf6;
+  color: #1f7a4f;
+  font-size: 0.75rem;
+  font-weight: 600;
+  gap: 6px;
+}
+
+.profile-moves-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.profile-moves-list li {
+  display: grid;
+  align-items: center;
+  grid-template-columns: 30px 1fr 60px 60px;
+  padding: 6px 6px;
+  border-bottom: 1px solid #f0f0f0;
+  font-size: 0.8rem;
+  gap: 6px;
+}
+
+.profile-moves-list li:last-child {
+  border-bottom: none;
+}
+
+.profile-popover {
+  width: 280px;
+  padding: 12px;
+  border: 1px solid #cfe7dc;
+  border-radius: 10px;
+  background: #ffffff;
+  font-size: 0.85rem;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+.profile-popover {
+  animation: profileFadeIn 0.15s ease-out;
+}
+
+.profile-popover-arrow {
+  fill: #ffffff;
+  stroke: #cfe7dc;
+  stroke-width: 1;
+}
+
+.profile-popover-body {
+  overflow-y: auto;
+}
+
+.profile-popover-header {
+  margin-bottom: 8px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e0f0e8;
+  color: #1f7a4f;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.profile-title {
+  margin: 0;
+  color: #1f7a4f;
+  font-size: 1.8rem;
+  text-align: center;
 }
 
 .your-turn {
   color: #ff7a00;
   font-weight: 700;
   animation: yourTurnPulse 1.5s ease-in-out infinite;
-}
-
-@keyframes yourTurnPulse {
-  0%, 100% {
-    text-shadow: 0 0 0 rgba(255, 122, 0, 0);
-  }
-
-  50% {
-    text-shadow: 0 0 8px rgba(255, 122, 0, 0.8);
-  }
 }
 
 @media (min-width: 1200px) and (max-width: 1300px) {
@@ -622,18 +614,18 @@
 
 @media (max-width: 950px) {
   .profile {
+    box-sizing: border-box;
     min-height: 100vh;
     padding: 20px 10px;
-    box-sizing: border-box;
   }
 
   .profile .profile-center {
     position: relative;
     top: auto;
     left: auto;
-    transform: none;
-    width: min(600px, 100%);
     order: 1;
+    width: min(600px, 100%);
+    transform: none;
   }
 
   .profile .history-table {
@@ -681,39 +673,38 @@
   }
 
   .game-code-cell {
-    gap: 4px;
     white-space: nowrap;
+    gap: 4px;
   }
 
   .game-code-cell button,
   .history-table td button {
+      flex-shrink: 0;
+      margin: 0;
       padding: 5px 8px;
       font-size: 0.75rem;
-      margin: 0;
-      flex-shrink: 0;
   }
 
   .profile .friends-panel {
     position: relative;
-    left: auto;
     top: auto;
-    transform: none;
+    left: auto;
+    order: 2;
     width: min(600px, 100%);
     height: 400px;
     margin-top: 20px;
-    order: 2;
+    transform: none;
   }
 
   .game-invitations-panel {
     position: relative;
-    left: auto;
-    right: auto;
     top: auto;
-    transform: none;
+    right: auto;
+    left: auto;
+    order: 3;
     width: min(600px, 100%);
     height: 220px;
     margin-top: 20px;
-    order: 3;
+    transform: none;
   }
 }
-
