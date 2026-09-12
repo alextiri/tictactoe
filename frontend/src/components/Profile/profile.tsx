@@ -32,6 +32,7 @@ interface GameInvitation {
     createdAt: string;
     status: string;
     gameCode: string | null;
+    type: "received" | "sent" | "notification" | "declined";
 }
 
 interface Move {
@@ -379,7 +380,10 @@ export default function Profile() {
     });
 
     const sendGameInvitationMutation = useMutation({
-        mutationFn: async (receiverId: number) => {
+        mutationFn: async ({ receiverId }: {
+            receiverId: number;
+            username: string;
+        }) => {
             const token = localStorage.getItem("token");
 
             if (!token) {
@@ -404,10 +408,84 @@ export default function Profile() {
 
             return await res.json();
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: ["gameInvitations"],
+        onMutate: async ({ receiverId, username }) => {
+            await queryClient.cancelQueries({
+                queryKey: ["gameInvitations", user?.id],
             });
+
+            const previousInvitations =
+                queryClient.getQueryData(["gameInvitations", user?.id]);
+
+            const optimisticInvitation: GameInvitation = {
+                id: -Date.now(),
+                userId: receiverId,
+                username,
+                createdAt: new Date().toISOString(),
+                status: "PENDING",
+                gameCode: null,
+                type: "sent"
+            };
+
+            queryClient.setQueryData(
+                ["gameInvitations", user?.id],
+                (old: any) => {
+                    if (!old) {
+                        return old;
+                    }
+
+                    return {
+                        ...old,
+                        pages: old.pages.map(
+                            (page: GameInvitationPageResponse, index: number) =>
+                                index === 0
+                                    ? {
+                                        ...page,
+                                        invitations: [
+                                            optimisticInvitation,
+                                            ...page.invitations,
+                                        ],
+                                    }
+                                    : page
+                        ),
+                    };
+                }
+            );
+
+            return {
+                previousInvitations,
+                optimisticInvitationId: optimisticInvitation.id
+            };
+        },
+        onError: (_error, _variables, context) => {
+            queryClient.setQueryData(
+                ["gameInvitations", user?.id],
+                context?.previousInvitations
+            );
+        },
+        onSuccess: (data, _variables, context) => {
+            queryClient.setQueryData(
+                ["gameInvitations", user?.id],
+                (old: any) => {
+                    if (!old) {
+                        return old;
+                    }
+
+                    return {
+                        ...old,
+                        pages: old.pages.map((page: GameInvitationPageResponse) => ({
+                            ...page,
+                            invitations: page.invitations.map((invitation) =>
+                                invitation.id === context?.optimisticInvitationId
+                                    ? {
+                                        ...invitation,
+                                        id: data.invitationId
+                                    }
+                                    : invitation
+                            )
+                        }))
+                    };
+                }
+            );
         },
     });
 
@@ -470,16 +548,47 @@ export default function Profile() {
 
             return await res.json();
         },
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: ["gameInvitations"],
+        onMutate: async (invitationId) => {
+            await queryClient.cancelQueries({
+                queryKey: ["gameInvitations", user?.id],
             });
+
+            const previousInvitations =
+                queryClient.getQueryData(["gameInvitations", user?.id]);
+
+            queryClient.setQueryData(
+                ["gameInvitations", user?.id],
+                (old: any) => {
+                    if (!old) {
+                        return old;
+                    }
+
+                    return {
+                        ...old,
+                        pages: old.pages.map((page: GameInvitationPageResponse) => ({
+                            ...page,
+                            invitations: page.invitations.filter(
+                                (invitation) => invitation.id !== invitationId
+                            ),
+                        })),
+                    };
+                }
+            );
+
+            return { previousInvitations };
+        },
+        onError: (_error, _invitationId, context) => {
+            queryClient.setQueryData(
+                ["gameInvitations", user?.id],
+                context?.previousInvitations
+            );
         },
     });
 
     const deleteGameInvitationMutation = useMutation({
         mutationFn: async (invitationId: number) => {
             const token = localStorage.getItem("token");
+
             if (!token) {
                 throw new Error("You must be logged in");
             }
@@ -489,7 +598,7 @@ export default function Profile() {
                 {
                     method: "DELETE",
                     headers: {
-                        Authorization: `Bearer ${token}`,
+                        Authorization: `Bearer ${token}`
                     },
                 }
             );
@@ -504,11 +613,40 @@ export default function Profile() {
 
             return await res.json();
         },
-
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: ["gameInvitations"],
+        onMutate: async (invitationId) => {
+            await queryClient.cancelQueries({
+                queryKey: ["gameInvitations", user?.id],
             });
+
+            const previousInvitations =
+                queryClient.getQueryData(["gameInvitations", user?.id]);
+
+            queryClient.setQueryData(
+                ["gameInvitations", user?.id],
+                (old: any) => {
+                    if (!old) {
+                        return old;
+                    }
+
+                    return {
+                        ...old,
+                        pages: old.pages.map((page: GameInvitationPageResponse) => ({
+                            ...page,
+                            invitations: page.invitations.filter(
+                                (invitation) => invitation.id !== invitationId
+                            ),
+                        })),
+                    };
+                }
+            );
+
+            return { previousInvitations };
+        },
+        onError: (_error, _invitationId, context) => {
+            queryClient.setQueryData(
+                ["gameInvitations", user?.id],
+                context?.previousInvitations
+            );
         },
     });
 
@@ -661,10 +799,16 @@ export default function Profile() {
                                             </span>
 
                                             <div>
-                                                <button onClick={() => sendGameInvitationMutation.mutate(friend.userId)}>
+                                                <button
+                                                    onClick={() =>
+                                                        sendGameInvitationMutation.mutate({
+                                                            receiverId: friend.userId,
+                                                            username: friend.username
+                                                        })
+                                                    }
+                                                >
                                                     Invite
                                                 </button>
-
                                                 <button onClick={() => handleRemoveFriend(friend)}>
                                                     Unfriend
                                                 </button>
@@ -849,7 +993,7 @@ export default function Profile() {
                 {gameInvitationsQuery.isLoading ? (
                     <p>Loading invitations...</p>
                 ) : allGameInvitations.length === 0 ? (
-                    <p>No game invitations</p>
+                    <p className="no-game-invitations">All quiet on the gaming front...</p>
                 ) : (
                     <div className="game-invitations-list-container">
                         <ul onScroll={handleGameInvitationsScroll}>

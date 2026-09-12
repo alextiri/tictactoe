@@ -29,7 +29,7 @@ public class GameInvitationController {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Integer senderId = Integer.valueOf(authentication.getName());
 
-        gameInvitationService.sendInvitation(
+        Integer invitationId = gameInvitationService.sendInvitation(
             senderId,
             request.get("receiverId")
         );
@@ -37,7 +37,8 @@ public class GameInvitationController {
         return ResponseEntity
             .status(201)
             .body(Map.of(
-                "message", "Game invitation sent successfully"
+                "message", "Game invitation sent successfully",
+                "invitationId", invitationId
             ));
     }
 

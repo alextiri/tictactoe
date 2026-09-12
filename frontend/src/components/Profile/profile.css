@@ -524,6 +524,14 @@
   overflow-y: auto;
 }
 
+.profile .no-game-invitations {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+}
+
 .game-code-cell {
   display: flex;
   align-items: center;

@@ -38,7 +38,7 @@ public class GameInvitationService {
     }
 
     @Transactional
-    public void sendInvitation(Integer senderId, Integer receiverId) {
+    public Integer sendInvitation(Integer senderId, Integer receiverId) {
         if (senderId.equals(receiverId)) {
             throw new IllegalArgumentException(
                 "You cannot invite yourself"
@@ -71,6 +71,8 @@ public class GameInvitationService {
             receiverId,
             "game-invitation:new"
         );
+
+        return invitation.getId();
     }
 
     @Transactional
