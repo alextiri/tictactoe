@@ -39,7 +39,7 @@
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
 }
 
-.game-actions > button {
+.profile .game-actions > button {
   display: block;
   margin: 5px auto 0;
 }
@@ -51,7 +51,12 @@
   width: 100%;
 }
 
-.game-invitations-panel {
+.profile .game-code-cell button {
+  flex-shrink: 0;
+  margin: 0 0 0 auto;
+}
+
+.profile .game-invitations-panel {
   position: fixed;
   top: 50%;
   right: calc(25% - 228px);
@@ -352,7 +357,30 @@
 }
 
 .profile .history-table th {
+  padding: 10px 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
   text-align: center;
+}
+
+.profile .history-table th:nth-child(1),
+.profile .history-table td:nth-child(1) {
+  width: 30%;
+}
+
+.profile .history-table th:nth-child(2),
+.profile .history-table td:nth-child(2) {
+  width: 15%;
+}
+
+.profile .history-table th:nth-child(3),
+.profile .history-table td:nth-child(3) {
+  width: 30%;
+}
+
+.profile .history-table th:nth-child(4),
+.profile .history-table td:nth-child(4) {
+  width: 25%;
 }
 
 .profile .join-error {
@@ -607,7 +635,7 @@
     left: 0;
   }
 
-  .game-invitations-panel {
+  .profile .game-invitations-panel {
     right: 0;
   }
 }
@@ -636,23 +664,33 @@
     table-layout: fixed;
   }
 
-  .history-table th:nth-child(1),
-  .history-table td:nth-child(1) {
-    width: 40%;
+  .history-table {
+    width: 100%;
+    font-size: 0.75rem;
   }
 
-  .history-table th:nth-child(2),
-  .history-table td:nth-child(2) {
-    width: 15%;
+  .history-table th,
+  .history-table td {
+    padding: 7px 5px;
   }
 
-  .history-table th:nth-child(3),
-  .history-table td:nth-child(3) {
+  .profile .history-table th:nth-child(1),
+  .profile .history-table td:nth-child(1) {
+    width: 37%;
+  }
+
+  .profile .history-table th:nth-child(2),
+  .profile .history-table td:nth-child(2) {
+    width: 18%;
+  }
+
+  .profile .history-table th:nth-child(3),
+  .profile .history-table td:nth-child(3) {
     width: 25%;
   }
 
-  .history-table th:nth-child(4),
-  .history-table td:nth-child(4) {
+  .profile .history-table th:nth-child(4),
+  .profile .history-table td:nth-child(4) {
     width: 20%;
   }
 
@@ -668,21 +706,22 @@
 
   .history-table th,
   .history-table td {
-    padding: 8px 6px;
-    font-size: 0.8rem;
+    padding: 7px 4px;
+    font-size: 0.7rem !important;
   }
 
   .game-code-cell {
     white-space: nowrap;
-    gap: 4px;
+    gap: 2px;
   }
 
-  .game-code-cell button,
+  .profile .game-code-cell button,
   .history-table td button {
-      flex-shrink: 0;
-      margin: 0;
-      padding: 5px 8px;
-      font-size: 0.75rem;
+    flex-shrink: 0;
+    margin: 0;
+    padding: 4px 6px;
+    font-size: 0.65rem;
+    white-space: nowrap;
   }
 
   .profile .friends-panel {
@@ -696,7 +735,7 @@
     transform: none;
   }
 
-  .game-invitations-panel {
+  .profile .game-invitations-panel {
     position: relative;
     top: auto;
     right: auto;
