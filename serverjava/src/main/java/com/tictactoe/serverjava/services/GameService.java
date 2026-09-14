@@ -11,7 +11,9 @@ import com.tictactoe.serverjava.repositories.UserRepository;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -47,46 +49,81 @@ public class GameService {
         List<Game> games = gameRepository.findUserGameHistory(userId);
         List<GameHistoryResponse> history = new ArrayList<>();
 
+        if (games.isEmpty()) {
+            return history;
+        }
+
+        List<Integer> gameIds = games.stream()
+            .map(Game::getId)
+            .toList();
+
+        List<Object[]> moveCounts = gameMoveRepository.countMovesByGameIds(gameIds);
+        Map<Integer, Integer> moveCountByGameId = new HashMap<>();
+
+        for (Object[] result : moveCounts) {
+            Integer gameId = (Integer) result[0];
+            Long count = (Long) result[1];
+
+            moveCountByGameId.put(gameId, count.intValue());
+        }
+
         for (Game game : games) {
-            List<GameMove> moves =
-                gameMoveRepository.findByGameIdOrderByMoveNumberAsc(
-                    game.getId()
-                );
-
-            List<GameMoveResponse> moveResponses = new ArrayList<>();
-            for (GameMove move : moves) {
-                String username = userRepository.findById(move.getPlayerId())
-                    .orElseThrow()
-                    .getUsername();
-
-                moveResponses.add(
-                    new GameMoveResponse(
-                        move.getMoveNumber(),
-                        move.getSymbol(),
-                        move.getSquare(),
-                        username
-                    )
-                );
-            }
+            int moveCount = moveCountByGameId.getOrDefault(game.getId(), 0);
 
             boolean yourTurn = "ongoing".equals(game.getStatus()) && (
-                    (game.getPlayerXId().equals(userId) && moves.size() % 2 == 0)
-                    || 
-                    (game.getPlayerOId() != null && game.getPlayerOId().equals(userId) && moves.size() % 2 == 1)
-                );
+                (game.getPlayerXId().equals(userId) && moveCount % 2 == 0)
+                ||
+                (game.getPlayerOId() != null
+                    && game.getPlayerOId().equals(userId)
+                    && moveCount % 2 == 1)
+            );
 
             history.add(new GameHistoryResponse(
-                    game.getId(),
-                    game.getGameCode(),
-                    game.getWinner(),
-                    game.getCreatedAt(),
-                    moveResponses,
-                    yourTurn
+                game.getId(),
+                game.getGameCode(),
+                game.getWinner(),
+                game.getCreatedAt(),
+                moveCount,
+                yourTurn
+            ));
+        }
+
+        return history;
+    }
+
+    public List<GameMoveResponse> getGameMoves(Integer gameId, Integer userId) {
+        Game game = gameRepository.findById(gameId).orElseThrow(() ->
+            new IllegalArgumentException("No game found for that ID")
+        );
+
+        if (!game.getPlayerXId().equals(userId)
+            && !userId.equals(game.getPlayerOId())) {
+            throw new IllegalArgumentException(
+                "You are not a player in this game"
+            );
+        }
+
+        List<GameMove> moves =
+            gameMoveRepository.findByGameIdOrderByMoveNumberAsc(gameId);
+
+        List<GameMoveResponse> moveResponses = new ArrayList<>();
+
+        for (GameMove move : moves) {
+            String username = userRepository.findById(move.getPlayerId())
+                .orElseThrow()
+                .getUsername();
+
+            moveResponses.add(
+                new GameMoveResponse(
+                    move.getMoveNumber(),
+                    move.getSymbol(),
+                    move.getSquare(),
+                    username
                 )
             );
         }
 
-        return history;
+        return moveResponses;
     }
 
     public Game createGame(Integer userId) {

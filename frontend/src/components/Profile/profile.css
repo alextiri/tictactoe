@@ -619,6 +619,15 @@
   overflow-y: auto;
 }
 
+.profile-popover-body:has(.loading-moves),
+.profile-popover-body:has(.no-moves),
+.profile-popover-body:has(.moves-error) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 50px;
+}
+
 .profile-popover-header {
   margin-bottom: 8px;
   padding-bottom: 6px;

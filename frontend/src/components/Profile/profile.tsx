@@ -47,7 +47,7 @@ interface GameHistoryEntry {
     gameCode: string;
     winner: string | null;
     createdAt: string;
-    moves: Move[];
+    moveCount: number;
     yourTurn: boolean;
 }
 
@@ -63,6 +63,10 @@ export default function Profile() {
     const [showFriendRequests, setShowFriendRequests] = useState(false);
     const [showAddFriend, setShowAddFriend] = useState(false);
     const [friendUsername, setFriendUsername] = useState("");
+
+    const [gameMoves, setGameMoves] = useState<Record<number, Move[]>>({});
+    const [loadingMoves, setLoadingMoves] = useState<number | null>(null);
+    const [movesError, setMovesError] = useState<number | null>(null);
 
     const [currentPage, setCurrentPage] = useState(1);
     const itemsPerPage = 5;
@@ -143,6 +147,28 @@ export default function Profile() {
 
         const data: HistoryResponse = await res.json();
         return data.history;
+    };
+
+    const fetchGameMoves = async (gameId: number): Promise<Move[]> => {
+        const token = localStorage.getItem("token");
+
+        if (!token) {
+            throw new Error("You must be logged in");
+        }
+
+        const res = await fetch(`${URLS.games}/${gameId}/moves`, {
+            headers: {
+                Authorization: `Bearer ${token}`
+            }
+        });
+
+        if (!res.ok) {
+            throw new Error("Failed to fetch game moves");
+        }
+
+        const data: { moves: Move[] } = await res.json();
+
+        return data.moves;
     };
 
     const fetchGameInvitations = async (page: number): Promise<GameInvitationPageResponse> => {
@@ -686,6 +712,28 @@ export default function Profile() {
         removeFriendMutation.mutate(friend.userId);
     };
 
+    const handleShowMoves = async (gameId: number) => {
+        if (gameMoves[gameId]) {
+            return;
+        }
+
+        setLoadingMoves(gameId);
+        setMovesError(null);
+
+        try {
+            const moves = await fetchGameMoves(gameId);
+
+            setGameMoves((previous) => ({
+                ...previous,
+                [gameId]: moves
+            }));
+        } catch {
+            setMovesError(gameId);
+        } finally {
+            setLoadingMoves(null);
+        }
+    };
+
     const totalPages = Math.ceil((historyQuery.data?.length ?? 0) / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const currentGames = historyQuery.data?.slice(startIndex, startIndex + itemsPerPage) ?? [];
@@ -864,7 +912,7 @@ export default function Profile() {
                                                     <span className={game.yourTurn ? "your-turn" : ""}>
                                                         {game.gameCode}
                                                     </span>
-                                                    {!game.winner && game.moves.length !== 9 && (
+                                                    {!game.winner && game.moveCount !== 9 && (
                                                         <button onClick={() => joinGameMutation.mutate(game.gameCode)}>
                                                             Rejoin
                                                         </button>
@@ -874,7 +922,7 @@ export default function Profile() {
                                             <td>
                                                 {game.winner
                                                     ? game.winner
-                                                    : game.moves.length === 9
+                                                    : game.moveCount === 9
                                                     ? "Draw"
                                                     : "Pending"}
                                             </td>
@@ -882,7 +930,12 @@ export default function Profile() {
                                             <td>
                                                 <Popover.Root>
                                                     <Popover.Trigger asChild>
-                                                        <button className="profile-moves-btn">Show</button>
+                                                        <button
+                                                            className="profile-moves-btn"
+                                                            onClick={() => handleShowMoves(game.gameId)}
+                                                        >
+                                                            Show
+                                                        </button>
                                                     </Popover.Trigger>
                                                     <Popover.Portal>
                                                         <Popover.Content
@@ -903,11 +956,15 @@ export default function Profile() {
                                                             </div>
 
                                                             <div className="profile-popover-body">
-                                                                {game.moves.length === 0 ? (
-                                                                    <p>No moves yet</p>
+                                                                {loadingMoves === game.gameId ? (
+                                                                    <p className="loading-moves">Loading moves...</p>
+                                                                ) : movesError === game.gameId ? (
+                                                                    <p className="moves-error">Failed to load moves</p>
+                                                                ) : gameMoves[game.gameId]?.length === 0 ? (
+                                                                    <p className="no-moves">No moves yet</p>
                                                                 ) : (
                                                                     <ul className="profile-moves-list">
-                                                                        {game.moves.map((move) => (
+                                                                        {gameMoves[game.gameId]?.map((move) => (
                                                                             <li
                                                                                 key={`${game.gameId}-${move.moveNumber}-${move.square}`}
                                                                             >

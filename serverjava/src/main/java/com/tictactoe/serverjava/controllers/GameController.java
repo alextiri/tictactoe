@@ -105,4 +105,14 @@ public class GameController {
 
         return ResponseEntity.ok(Map.of("game", game));
     }
+
+    @GetMapping("/{id}/moves")
+    public ResponseEntity<?> getGameMoves(@PathVariable Integer id) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Integer userId = Integer.valueOf(authentication.getName());
+
+        return ResponseEntity.ok(
+            Map.of("moves", gameService.getGameMoves(id, userId))
+        );
+    }
 }
