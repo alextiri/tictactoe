@@ -111,19 +111,25 @@ export default function AuthenticatedLayout() {
 
             queryClient.setQueryData(
                 ["friends", user.id],
-                (friends: any[] | undefined) => {
-                    if (!friends) {
-                        return friends;
+                (old: any) => {
+                    if (!old) {
+                        return old;
                     }
 
-                    return friends.map((friend) =>
-                        friend.userId === Number(userId)
-                            ? {
-                                ...friend,
-                                online: status === "online"
-                            }
-                            : friend
-                    );
+                    return {
+                        ...old,
+                        pages: old.pages.map((page: any) => ({
+                            ...page,
+                            friends: page.friends.map((friend: any) =>
+                                friend.userId === Number(userId)
+                                    ? {
+                                        ...friend,
+                                        online: status === "online"
+                                    }
+                                    : friend
+                            )
+                        }))
+                    };
                 }
             );
         };
