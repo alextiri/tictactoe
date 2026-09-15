@@ -71,6 +71,14 @@ export default function AuthenticatedLayout() {
                 return;
             }
 
+            if (event.data === "friend-request:new") {
+                queryClient.invalidateQueries({
+                    queryKey: ["friendRequests", user.id],
+                });
+
+                return;
+            }
+
             const [status, userId] = event.data.split(":");
 
             queryClient.setQueryData(

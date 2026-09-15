@@ -151,6 +151,11 @@ public class FriendRequestService {
         request.setStatus("PENDING");
 
         friendRequestRepository.save(request);
+
+        presenceService.sendToUser(
+            receiverId,
+            "friend-request:new"
+        );
     }
 
     @Transactional
