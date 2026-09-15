@@ -25,6 +25,14 @@ interface FriendRequestResponse {
     createdAt: string;
 }
 
+interface FriendNotification {
+    id: number;
+    userId: number;
+    username: string;
+    createdAt: string;
+    status: string;
+}
+
 interface GameInvitation {
     id: number;
     userId: number;
@@ -193,6 +201,28 @@ export default function Profile() {
         return await res.json();
     };
 
+    const fetchFriendNotifications = async (): Promise<FriendNotification[]> => {
+        const token = localStorage.getItem("token");
+        if (!token) {
+            throw new Error("You must be logged in");
+        }
+
+        const res = await fetch(
+            `${URLS.friends}/notifications`,
+            {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            }
+        );
+
+        if (!res.ok) {
+            throw new Error("Failed to fetch friend notifications");
+        }
+
+        return await res.json();
+    };
+
     const queryClient = useQueryClient();
 
     const friendsQuery = useInfiniteQuery({
@@ -206,6 +236,12 @@ export default function Profile() {
     const friendRequestsQuery = useQuery({
         queryKey: ["friendRequests", user?.id],
         queryFn: fetchFriendRequests
+    });
+
+    const friendNotificationsQuery = useQuery({
+        queryKey: ["friendNotifications", user?.id],
+        queryFn: fetchFriendNotifications,
+        enabled: !!user,
     });
 
     const historyQuery = useQuery({
@@ -375,6 +411,10 @@ export default function Profile() {
             queryClient.invalidateQueries({
                 queryKey: ["friendRequests"]
             });
+
+            if (friendRequestsQuery.data?.length === 1) {
+                setShowFriendRequests(false);
+            }
         }
     });
 
@@ -676,6 +716,38 @@ export default function Profile() {
         },
     });
 
+    const deleteFriendNotificationMutation = useMutation({
+        mutationFn: async (requestId: number) => {
+            const token = localStorage.getItem("token");
+
+            if (!token) {
+                throw new Error("You must be logged in");
+            }
+
+            const res = await fetch(
+                `${URLS.friends}/notifications/${requestId}`,
+                {
+                    method: "DELETE",
+                    headers: {
+                        Authorization: `Bearer ${token}`
+                    }
+                }
+            );
+
+            if (!res.ok) {
+                const data = await res.json();
+                throw new Error(
+                    data.message || "Failed to delete friend notification"
+                );
+            }
+        },
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["friendNotifications", user?.id]
+            });
+        }
+    });
+
     const handleNewGame = () => {
         newGameMutation.mutate();
     };
@@ -744,6 +816,24 @@ export default function Profile() {
     const allGameInvitations = gameInvitations.map((invitation) => ({
         ...invitation,
     }));
+
+    const friendNotifications =
+        friendNotificationsQuery.data?.map((notification) => ({
+            ...notification,
+            type:
+                notification.status === "ACCEPTED"
+                    ? "friend-accepted"
+                    : "friend-declined",
+        })) ?? [];
+
+    const allNotifications = [
+        ...allGameInvitations,
+        ...friendNotifications,
+    ].sort(
+        (a, b) =>
+            new Date(b.createdAt).getTime() -
+            new Date(a.createdAt).getTime()
+    );
 
     const friends = friendsQuery.data?.pages.flatMap(page => page.friends) ?? [];
 
@@ -1045,19 +1135,23 @@ export default function Profile() {
                 </div>
             </div>
             <div className="game-invitations-panel">
-                <h2 className="history-title">Game Invitations</h2>
+                <h2 className="history-title">Activity</h2>
 
                 {gameInvitationsQuery.isLoading ? (
                     <p>Loading invitations...</p>
-                ) : allGameInvitations.length === 0 ? (
+                ) : allNotifications.length === 0 ? (
                     <p className="no-game-invitations">All quiet on the gaming front...</p>
                 ) : (
                     <div className="game-invitations-list-container">
                         <ul onScroll={handleGameInvitationsScroll}>
-                            {allGameInvitations.map((invitation: any) => (
+                            {allNotifications.map((invitation: any) => (
                                 <li key={`${invitation.type}-${invitation.id}`}>
                                     <span>
-                                        {invitation.type === "notification"
+                                        {invitation.type === "friend-accepted"
+                                            ? `${invitation.username} accepted your friend request`
+                                            : invitation.type === "friend-declined"
+                                            ? `${invitation.username} declined your friend request`
+                                            : invitation.type === "notification"
                                             ? invitation.status === "ACCEPTED"
                                                 ? `${invitation.username} accepted your invitation: Game ${invitation.gameCode}`
                                                 : invitation.message
@@ -1093,6 +1187,15 @@ export default function Profile() {
                                                 }
                                             >
                                                 Cancel
+                                            </button>
+                                        ) : invitation.type === "friend-declined" ||
+                                        invitation.type === "friend-accepted" ? (
+                                            <button
+                                                onClick={() =>
+                                                    deleteFriendNotificationMutation.mutate(invitation.id)
+                                                }
+                                            >
+                                                X
                                             </button>
                                         ) : (
                                             <button

@@ -1,5 +1,6 @@
 package com.tictactoe.serverjava.controllers;
 
+import com.tictactoe.serverjava.dtos.FriendNotificationResponse;
 import com.tictactoe.serverjava.dtos.FriendPageResponse;
 import com.tictactoe.serverjava.dtos.FriendRequestResponse;
 import com.tictactoe.serverjava.services.FriendRequestService;
@@ -9,6 +10,7 @@ import java.util.List;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -59,5 +61,22 @@ public class FriendRequestController {
     public void removeFriend(@RequestParam Integer friendId, Authentication authentication) {
         Integer userId = Integer.parseInt(authentication.getName());
         friendRequestService.removeFriend(userId, friendId);
+    }
+
+    @GetMapping("/notifications")
+    public List<FriendNotificationResponse> getFriendNotifications(Authentication authentication) {
+        Integer userId = Integer.parseInt(authentication.getName());
+
+        return friendRequestService.getFriendNotifications(userId);
+    }
+
+    @DeleteMapping("/notifications/{requestId}")
+    public void deleteFriendNotification(@PathVariable Integer requestId, Authentication authentication) {
+        Integer userId = Integer.parseInt(authentication.getName());
+
+        friendRequestService.deleteFriendNotification(
+            userId,
+            requestId
+        );
     }
 }

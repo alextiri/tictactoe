@@ -84,6 +84,18 @@ export default function AuthenticatedLayout() {
                     queryKey: ["friends", user.id],
                 });
 
+                queryClient.invalidateQueries({
+                    queryKey: ["friendNotifications", user.id],
+                });
+
+                return;
+            }
+
+            if (event.data === "friend-request:declined") {
+                queryClient.invalidateQueries({
+                    queryKey: ["friendNotifications", user.id],
+                });
+
                 return;
             }
 

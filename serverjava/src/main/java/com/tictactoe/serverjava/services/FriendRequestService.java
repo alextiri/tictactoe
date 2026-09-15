@@ -11,6 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import com.tictactoe.serverjava.dtos.FriendNotificationResponse;
 import com.tictactoe.serverjava.dtos.FriendPageResponse;
 import com.tictactoe.serverjava.dtos.FriendRequestResponse;
 import com.tictactoe.serverjava.dtos.FriendResponse;
@@ -124,7 +125,11 @@ public class FriendRequestService {
         }
 
         FriendRequest oppositeRequest = friendRequestRepository
-            .findBySenderIdAndReceiverId(receiverId, senderId)
+            .findBySenderIdAndReceiverIdAndStatus(
+                receiverId,
+                senderId,
+                "PENDING"
+            )
             .orElse(null);
 
         if (oppositeRequest != null) {
@@ -165,9 +170,18 @@ public class FriendRequestService {
 
     @Transactional
     public void declineRequest(Integer receiverId, Integer senderId) {
-        friendRequestRepository.deleteBySenderIdAndReceiverId(
+        FriendRequest request = friendRequestRepository
+            .findBySenderIdAndReceiverId(senderId, receiverId)
+            .orElseThrow(() ->
+                new IllegalArgumentException("Friend request not found")
+            );
+
+        request.setStatus("DECLINED");
+        friendRequestRepository.save(request);
+
+        presenceService.sendToUser(
             senderId,
-            receiverId
+            "friend-request:declined"
         );
     }
 
@@ -187,6 +201,62 @@ public class FriendRequestService {
         presenceService.sendToUser(
             friendId,
             "friend:removed"
+        );
+    }
+
+    public List<FriendNotificationResponse> getFriendNotifications(Integer userId) {
+        List<FriendRequest> requests =
+            friendRequestRepository.findBySenderIdAndStatusIn(
+                userId,
+                List.of("ACCEPTED", "DECLINED")
+            );
+
+        List<FriendNotificationResponse> responses = new ArrayList<>();
+
+        for (FriendRequest request : requests) {
+            User user = userRepository.findById(request.getReceiverId())
+                .orElseThrow();
+
+            responses.add(
+                new FriendNotificationResponse(
+                    request.getId(),
+                    user.getId(),
+                    user.getUsername(),
+                    request.getCreatedAt(),
+                    request.getStatus()
+                )
+            );
+        }
+
+        return responses;
+    }
+
+    @Transactional
+    public void deleteFriendNotification(Integer userId, Integer requestId) {
+        FriendRequest request = friendRequestRepository.findById(requestId)
+            .orElseThrow(() ->
+                new IllegalArgumentException("Friend request not found")
+            );
+
+        if (!request.getSenderId().equals(userId)) {
+            throw new IllegalArgumentException(
+                "You cannot delete this notification"
+            );
+        }
+
+        if (request.getStatus().equals("DECLINED")) {
+            friendRequestRepository.delete(request);
+            return;
+        }
+
+        if (request.getStatus().equals("ACCEPTED")) {
+            request.setStatus("ARCHIVED");
+            friendRequestRepository.save(request);
+            return;
+        }
+
+        throw new IllegalArgumentException(
+            "This is not a friend notification"
         );
     }
 }
