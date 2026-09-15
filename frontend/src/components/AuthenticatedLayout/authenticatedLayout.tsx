@@ -79,6 +79,22 @@ export default function AuthenticatedLayout() {
                 return;
             }
 
+            if (event.data === "friend-request:accepted") {
+                queryClient.invalidateQueries({
+                    queryKey: ["friends", user.id],
+                });
+
+                return;
+            }
+
+            if (event.data === "friend:removed") {
+                queryClient.invalidateQueries({
+                    queryKey: ["friends", user.id],
+                });
+
+                return;
+            }
+
             const [status, userId] = event.data.split(":");
 
             queryClient.setQueryData(

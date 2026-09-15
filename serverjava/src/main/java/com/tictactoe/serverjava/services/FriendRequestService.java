@@ -142,6 +142,11 @@ public class FriendRequestService {
             friendshipRepository.save(friendship1);
             friendshipRepository.save(friendship2);
 
+            presenceService.sendToUser(
+                receiverId,
+                "friend-request:accepted"
+            );
+
             return;
         }
 
@@ -173,5 +178,15 @@ public class FriendRequestService {
 
         friendRequestRepository.deleteBySenderIdAndReceiverId(userId, friendId);
         friendRequestRepository.deleteBySenderIdAndReceiverId(friendId, userId);
+
+        presenceService.sendToUser(
+            userId,
+            "friend:removed"
+        );
+
+        presenceService.sendToUser(
+            friendId,
+            "friend:removed"
+        );
     }
 }
