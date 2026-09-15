@@ -37,7 +37,7 @@ public class PresenceService {
                 .set(
                     "presence:user:" + userId,
                     "online",
-                    Duration.ofSeconds(30)
+                    Duration.ofSeconds(10)
                 );
         }
 
@@ -91,7 +91,7 @@ public class PresenceService {
     public void refreshPresence(Integer userId) {
         redisTemplate.expire(
             "presence:user:" + userId,
-            Duration.ofSeconds(15)
+            Duration.ofSeconds(10)
         );
     }
 }
