@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom"
-import { useRef, useState } from "react";
+import { useState } from "react";
 import './profile.css'
 import "@radix-ui/themes/styles.css";
 import * as Popover from "@radix-ui/react-popover";
@@ -81,12 +81,10 @@ export default function Profile() {
 
     const storedUser = localStorage.getItem("user");
     const user = storedUser ? JSON.parse(storedUser) : null;
-
-    const presenceSocket = useRef<WebSocket | null>(null);
     
     const handleLogout = () => {
-        presenceSocket.current?.send("logout");
-        presenceSocket.current?.close();
+        window.dispatchEvent(new Event("logout"));
+
         localStorage.removeItem('token');
         localStorage.removeItem('user');
         queryClient.clear();

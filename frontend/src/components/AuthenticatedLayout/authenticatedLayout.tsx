@@ -20,6 +20,16 @@ export default function AuthenticatedLayout() {
             `${import.meta.env.VITE_WS_URL}/ws/presence?token=${token}`
         );
 
+        const handleLogout = () => {
+            if (socket.readyState === WebSocket.OPEN) {
+                socket.send("logout");
+            }
+
+            socket.close();
+        };
+
+        window.addEventListener("logout", handleLogout);
+
         socket.onopen = () => {
             console.log("Presence WebSocket connected");
         };
@@ -135,6 +145,7 @@ export default function AuthenticatedLayout() {
         };
 
         return () => {
+            window.removeEventListener("logout", handleLogout);
             socket.close();
         };
     }, [queryClient]);
