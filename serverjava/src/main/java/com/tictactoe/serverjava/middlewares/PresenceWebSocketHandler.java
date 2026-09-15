@@ -48,10 +48,6 @@ public class PresenceWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void handleTextMessage(WebSocketSession session, TextMessage message) {
-        if (!message.getPayload().equals("logout")) {
-            return;
-        }
-
         Integer userId = getUserId(session);
 
         if (message.getPayload().equals("heartbeat")) {
@@ -62,16 +58,24 @@ public class PresenceWebSocketHandler extends TextWebSocketHandler {
             return;
         }
 
+        if (!message.getPayload().equals("logout")) {
+            return;
+        }
+
         if (userId != null) {
-            boolean wentOffline = presenceService.userDisconnected(userId, session);
+            boolean wentOffline =
+                presenceService.userDisconnected(userId, session);
 
             if (wentOffline) {
-                System.out.println("User " + userId + " is offline");
+                System.out.println(
+                    "User " + userId + " is offline"
+                );
 
-                for (Integer friendId : friendRequestService.getFriendIds(userId)) {
+                for (Integer friendId :
+                    friendRequestService.getFriendIds(userId)) {
                     presenceService.sendToUser(
                         friendId,
-                        "offline: " + userId
+                        "offline:" + userId
                     );
                 }
             }

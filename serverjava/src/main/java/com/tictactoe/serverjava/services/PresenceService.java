@@ -22,26 +22,29 @@ public class PresenceService {
     }
 
     public boolean userConnected(Integer userId, WebSocketSession session) {
+        String key = "presence:user:" + userId;
+
+        boolean wasOnline = Boolean.TRUE.equals(
+            redisTemplate.hasKey(key)
+        );
+
         Set<WebSocketSession> sessions =
             userSessions.computeIfAbsent(
                 userId,
-                key -> ConcurrentHashMap.newKeySet()
+                key2 -> ConcurrentHashMap.newKeySet()
             );
 
-        boolean wasOffline = sessions.isEmpty();
         sessions.add(session);
 
-        if (wasOffline) {
-            redisTemplate
-                .opsForValue()
-                .set(
-                    "presence:user:" + userId,
-                    "online",
-                    Duration.ofSeconds(15)
-                );
-        }
+        redisTemplate
+            .opsForValue()
+            .set(
+                key,
+                "online",
+                Duration.ofSeconds(15)
+            );
 
-        return wasOffline;
+        return !wasOnline;
     }
 
     public boolean userDisconnected(Integer userId, WebSocketSession session) {
