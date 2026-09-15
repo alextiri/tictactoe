@@ -20,6 +20,12 @@ export default function AuthenticatedLayout() {
             `${import.meta.env.VITE_WS_URL}/ws/presence?token=${token}`
         );
 
+        const heartbeat = setInterval(() => {
+            if (socket.readyState === WebSocket.OPEN) {
+                socket.send("heartbeat");
+            }
+        }, 5000);
+
         const handleLogout = () => {
             if (socket.readyState === WebSocket.OPEN) {
                 socket.send("logout");
@@ -145,6 +151,7 @@ export default function AuthenticatedLayout() {
         };
 
         return () => {
+            clearInterval(heartbeat);
             window.removeEventListener("logout", handleLogout);
             socket.close();
         };

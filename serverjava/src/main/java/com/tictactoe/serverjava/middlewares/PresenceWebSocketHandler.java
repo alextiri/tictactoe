@@ -54,6 +54,14 @@ public class PresenceWebSocketHandler extends TextWebSocketHandler {
 
         Integer userId = getUserId(session);
 
+        if (message.getPayload().equals("heartbeat")) {
+            if (userId != null) {
+                presenceService.refreshPresence(userId);
+            }
+
+            return;
+        }
+
         if (userId != null) {
             boolean wentOffline = presenceService.userDisconnected(userId, session);
 
@@ -63,7 +71,7 @@ public class PresenceWebSocketHandler extends TextWebSocketHandler {
                 for (Integer friendId : friendRequestService.getFriendIds(userId)) {
                     presenceService.sendToUser(
                         friendId,
-                        "offline:" + userId
+                        "offline: " + userId
                     );
                 }
             }

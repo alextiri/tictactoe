@@ -11,7 +11,6 @@ import org.springframework.web.socket.TextMessage;
 import org.springframework.web.socket.WebSocketSession;
 
 import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.scheduling.annotation.Scheduled;
 
 @Service
 public class PresenceService {
@@ -92,14 +91,7 @@ public class PresenceService {
     public void refreshPresence(Integer userId) {
         redisTemplate.expire(
             "presence:user:" + userId,
-            Duration.ofSeconds(30)
+            Duration.ofSeconds(15)
         );
-    }
-
-    @Scheduled(fixedRate = 10000, initialDelay = 1000)
-    public void refreshOnlineUsers() {
-        for (Integer userId : userSessions.keySet()) {
-            refreshPresence(userId);
-        }
     }
 }
