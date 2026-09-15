@@ -24,7 +24,7 @@ export default function AuthenticatedLayout() {
             if (socket.readyState === WebSocket.OPEN) {
                 socket.send("heartbeat");
             }
-        }, 3000);
+        }, 5000);
 
         const handleLogout = () => {
             if (socket.readyState === WebSocket.OPEN) {
