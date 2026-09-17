@@ -65,8 +65,7 @@ export default function Home() {
     <div className='home'>
         <BubbleBackground/>
         <div className="home-header">
-            <h1>TicTacToes</h1>
-            <h2>(mmm toes...)</h2>
+            <h1>TicTacToe</h1>
             <p className="login-subtitle">Log in to play</p>
         </div>
         <div className='login-card'>

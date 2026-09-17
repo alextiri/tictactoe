@@ -1136,7 +1136,7 @@ export default function Profile() {
                 <h2 className="history-title">Activity</h2>
 
                 {gameInvitationsQuery.isLoading ? (
-                    <p>Loading invitations...</p>
+                    <p className="loading-notifications">Loading notifications...</p>
                 ) : allNotifications.length === 0 ? (
                     <p className="no-game-invitations">All quiet on the gaming front...</p>
                 ) : (
